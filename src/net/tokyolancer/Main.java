@@ -17,5 +17,8 @@ public class Main {
 //
 //        Class<?> clazz = Class.forName("org.apache.commons.io.ByteOrderMark");
 //        System.out.println(clazz);
+
+        Class<?> clazz = Class.forName("org.objectweb.asm.signature.SignatureWriter");
+        System.out.println(clazz);
     }
 }

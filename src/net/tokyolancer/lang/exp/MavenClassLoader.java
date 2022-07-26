@@ -1,6 +1,7 @@
 package net.tokyolancer.lang.exp;
 
 import net.tokyolancer.lang.network.MavenURL;
+import net.tokyolancer.lang.network.NetUtil;
 import net.tokyolancer.lang.reflect.Reflection;
 
 import java.io.*;
@@ -16,25 +17,27 @@ import java.util.stream.Collectors;
  */
 public final class MavenClassLoader {
 
-    private static final Method INJECTOR;
+//    private static final Method INJECTOR;
 
-    static {
-        try {
-            INJECTOR = ClassLoader.class.getDeclaredMethod(
-                            "defineClass1",
-                            ClassLoader.class,
-                            String.class,
-                            byte[].class,
-                            int.class,
-                            int.class,
-                            ProtectionDomain.class,
-                            String.class
-                    );
-            Reflection.unlockNative(INJECTOR); // unlock first
-        } catch (Exception e) {
-            throw new RuntimeException();
-        }
-    }
+//    static {
+//        try {
+//            INJECTOR = ClassLoader.class.getDeclaredMethod(
+//                            "defineClass1",
+//                            ClassLoader.class,
+//                            String.class,
+//                            byte[].class,
+//                            int.class,
+//                            int.class,
+//                            ProtectionDomain.class,
+//                            String.class
+//                    );
+//            INJECTOR = Reflection.getDefineClassMethod();
+//            Reflection.unlockNative(INJECTOR); // unlock first
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            throw new RuntimeException();
+//        }
+//    }
 
     // Confirms that the bytes were loaded correctly (the source of this data is the download link from the Maven repository)
     private final boolean isVerified;
@@ -71,6 +74,17 @@ public final class MavenClassLoader {
         this.magicSort = magicSort;
     }
 
+    public void loadClasses() throws IOException {
+        this.preLoadClasses();
+        this.loadClasses0();
+
+        // Удаляем прочие данные, потому что
+        // повторная загрузка классов из одного
+        // и того же экземпляра объекта - невозможна.
+        this.loadedAlready = null;
+        this.allEntries = null;
+    }
+
     private JarFile createJar() throws IOException {
         // Создаёт временный файл в директории /TEMP/ текущей ОС.
         // Имеет такой вид: mcl{набор_цифр}.tmp
@@ -96,17 +110,6 @@ public final class MavenClassLoader {
             } catch (Exception ignored) { }
         } else result = new JarFile(tempFile);
         return result;
-    }
-
-    public void loadClasses() throws IOException {
-        this.preLoadClasses();
-        this.loadClasses0();
-
-        // Удаляем прочие данные, потому что
-        // повторная загрузка классов из одного
-        // и того же экземпляра объекта - невозможна.
-        this.loadedAlready = null;
-        this.allEntries = null;
     }
 
     private void preLoadClasses() throws IOException {
@@ -136,7 +139,7 @@ public final class MavenClassLoader {
                 // Считываем данные
                 InputStream inStream = file.getInputStream(entry);
 
-                this.allEntries.put(className, inStream.readAllBytes() );
+                this.allEntries.put(className, NetUtil.download(inStream) );
 
                 // Не забываем закрывать поток
                 inStream.close();
@@ -156,13 +159,6 @@ public final class MavenClassLoader {
     private void loadClasses0() {
         // Счётчик незагруженных классов
         int problems = 0;
-
-//        for (Map.Entry<String, byte[]> entry : this.allEntries.entrySet() ) {
-//            // Если класс уже был загружен, то смысла его подгружать - нет
-//            if (this.loadedAlready.contains(entry.getKey() ) ) continue;
-//            // Если класс не подгрузился по какой-то причине - обновляем счётчик
-//            if (!loadClass0(entry.getKey(), entry.getValue() ) ) ++problems;
-//        }
 
         // Более быстрый способ загрузки классов
         Iterator<Map.Entry<String, byte[]>> it = this.allEntries.entrySet().iterator();
@@ -193,11 +189,13 @@ public final class MavenClassLoader {
             // PlatformClassLoader или SystemClassLoader, а так-же стоит ли указывать
             // родительский лоадер. Так-же есть и другие аргументы функции, но они заменяемы
             // значениями NULL и в принципе можно быть спокойным.
-            INJECTOR.invoke(ClassLoader.getSystemClassLoader(),
-                    ClassLoader.getSystemClassLoader(), name, data, 0, data.length, null, null);
+//            INJECTOR.invoke(ClassLoader.getSystemClassLoader(),
+//                    ClassLoader.getSystemClassLoader(), name, data, 0, data.length, null, null);
+            Reflection.defineClass(name, data);
             // Запоминаем, что класс уже был подгружен
             this.loadedAlready.add(name);
         } catch (Exception e) {
+//            e.printStackTrace();
 //            System.out.printf("Failed to load class: %s\n", name);
             return false;
         }

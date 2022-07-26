@@ -7,9 +7,9 @@ import java.util.StringJoiner;
 
 public final class MavenURL implements Serializable {
 
-    // "https://{repository}/{group_id}/{artifact_id}/{version}/{artifact_id}-{version}.jar"
+    // "{repository}/{group_id}/{artifact_id}/{version}/{artifact_id}-{version}.jar"
     private static final String LINK_FORMAT = "%s/%s/%s/%s/%s-%s.jar";
-    private static final int STANDARD_BUFFER_SIZE = 512;
+    private static final int STANDARD_BUFFER_SIZE = 1024 * 3;
 
     private final String baseURL;
     private final int bufferSize;
@@ -28,24 +28,22 @@ public final class MavenURL implements Serializable {
                     String artifactId,
                     String version,
                     int bufferSize) {
-        this.baseURL = LINK_FORMAT.formatted(repository.page(),
+        this.baseURL = String.format(LINK_FORMAT, repository.page(),
                 groupId.replace(".", "/"), artifactId, version, artifactId, version);
+//        this.baseURL = LINK_FORMAT.formatted(repository.page(),
+//                groupId.replace(".", "/"), artifactId, version, artifactId, version);
         this.bufferSize = bufferSize;
     }
 
     public byte[] download() throws IOException {
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        BufferedInputStream inStream = new BufferedInputStream(getURL().openStream() );
-        byte[] buffer = new byte[bufferSize];
-        int count;
-        while ((count = inStream.read(buffer, 0, bufferSize) ) != -1) {
-            outStream.write(buffer, 0, count);
-            outStream.flush();
-        }
-        outStream.flush();
-        outStream.close();
-        inStream.close();
-        return outStream.toByteArray();
+        long millis = System.currentTimeMillis();
+        byte[] data = this.download0();
+        System.out.println("Downloaded in " + (System.currentTimeMillis() - millis) + " ms");
+        return data;
+    }
+
+    private byte[] download0() throws IOException {
+        return NetUtil.download(getURL().openStream() );
     }
 
     public URL getURL() throws MalformedURLException {

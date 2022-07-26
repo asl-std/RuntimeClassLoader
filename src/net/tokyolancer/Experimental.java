@@ -58,7 +58,7 @@ public class Experimental {
         // Поэтому проблем не должно быть
         //
         // P.S. Может ударить по голове ошибкой Illegal Access
-        MethodHandles.lookup().defineClass(data);
+        // MethodHandles.lookup().defineClass(data);
     }
 
     public static void test2(String className, byte[] data) throws NoSuchMethodException,
