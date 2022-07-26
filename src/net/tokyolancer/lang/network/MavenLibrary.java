@@ -5,7 +5,7 @@ package net.tokyolancer.lang.network;
  */
 public enum MavenLibrary {
 
-    OracleJDBC(MavenRepository.Central, "com.oracle.database.jdbc", "ojdbc11", "21.6.0.0.1");
+    ASM(MavenRepository.Central, "org.ow2.asm", "asm", "9.3");
 
     private final MavenRepository repository;
     private final String groupId;

@@ -3,10 +3,7 @@ package net.tokyolancer.lang.exp;
 import net.tokyolancer.lang.network.MavenURL;
 import net.tokyolancer.lang.reflect.Reflection;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.security.ProtectionDomain;
 import java.util.*;
@@ -14,7 +11,10 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 
-public class MavenClassLoader {
+/**
+ *
+ */
+public final class MavenClassLoader {
 
     private static final Method INJECTOR;
 
@@ -36,19 +36,24 @@ public class MavenClassLoader {
         }
     }
 
-    private final List<String> loadedAlready = new ArrayList<>();
-
-    private final byte[] origin;
+    // Confirms that the bytes were loaded correctly (the source of this data is the download link from the Maven repository)
     private final boolean isVerified;
 
-    private Map<String, byte[]> allEntries = new HashMap<>();
+    // Notifies that the list of loaded classes will be sorted
+    private final boolean magicSort;
 
-//    private JarInputStream lastInStream;
-    private JarFile lastJarFile;
+    private Map<String, byte[]> allEntries = new HashMap<>();
+    private List<String> loadedAlready = new ArrayList<>();
+
+    private byte[] origin;
     private int lastProblemsAmount = -1;
 
     public MavenClassLoader(MavenURL url) throws IOException {
-        this(url.download(), true);
+        this(url, true);
+    }
+
+    public MavenClassLoader(MavenURL url, boolean magicSort) throws IOException {
+        this(url.download(), true, magicSort);
     }
 
     @Deprecated
@@ -57,32 +62,51 @@ public class MavenClassLoader {
     }
 
     private MavenClassLoader(byte[] data, boolean isVerified) {
-        this.origin = data;
-        this.isVerified = isVerified;
+        this(data, isVerified, true);
     }
 
-//    public JarInputStream jarStream() throws IOException {
-//        if (this.lastInStream != null) return this.lastInStream;
-//        return this.lastInStream = new JarInputStream(new ByteArrayInputStream(this.origin) );
-//    }
+    private MavenClassLoader(byte[] data, boolean isVerified, boolean magicSort) {
+        this.origin = data;
+        this.isVerified = isVerified;
+        this.magicSort = magicSort;
+    }
 
-    public JarFile createJar() throws IOException {
-        if (this.lastJarFile != null) return this.lastJarFile;
+    private JarFile createJar() throws IOException {
+        // Создаёт временный файл в директории /TEMP/ текущей ОС.
+        // Имеет такой вид: mcl{набор_цифр}.tmp
+        File tempFile = File.createTempFile("mcl", null, null);
+        tempFile.deleteOnExit();
 
-        // Создаёт файл в директории /TEMP/ текущей ОС.
-        // Имеет такой вид: cls{набор_цифр}.tmp
-        File tempFile = File.createTempFile("cls", null, null);
         FileOutputStream fos = new FileOutputStream(tempFile);
         fos.write(this.origin);
         fos.flush();
         fos.close();
 
-        return this.lastJarFile = new JarFile(tempFile);
+        // Обрезаем поинтер чтобы GC при
+        // следующей очистке удалил референс из памяти
+        this.origin = null;
+
+        JarFile result = null;
+
+        // Если байты не были ранее верифицированы,
+        // то мы создаём инстансу под блоком try-catch
+        if (!this.isVerified) {
+            try {
+                result = new JarFile(tempFile);
+            } catch (Exception ignored) { }
+        } else result = new JarFile(tempFile);
+        return result;
     }
 
     public void loadClasses() throws IOException {
         this.preLoadClasses();
         this.loadClasses0();
+
+        // Удаляем прочие данные, потому что
+        // повторная загрузка классов из одного
+        // и того же экземпляра объекта - невозможна.
+        this.loadedAlready = null;
+        this.allEntries = null;
     }
 
     private void preLoadClasses() throws IOException {
@@ -94,90 +118,89 @@ public class MavenClassLoader {
             while (entries.hasMoreElements() ) {
                 JarEntry entry = entries.nextElement();
 
-                // if entry is directory - skip
+                // Если это директория - скипаем
                 if (entry.isDirectory() ) continue;
 
                 final String name = entry.getName();
 
-                // if entry is file, but it is not a .class file
-                if (!name.endsWith(".class") || name.endsWith("package-info.class") ) continue;
+                // Скипаем всё что не относится к файлу типа '.class'
+                if (!name.endsWith(".class")
+                        || name.endsWith("package-info.class")
+                        || name.endsWith("module-info.class") ) continue;
 
-                final String className = name.replace(".class", "").replace("/", ".");
+                // Так как мы вытаскиваем название пути из
+                // псевдо-архива, то путь будет иметь разделитель - '/'
+                final String className = name.replace(".class", "")
+                                             .replace("/", ".");
 
-                InputStream stream = file.getInputStream(entry);
+                // Считываем данные
+                InputStream inStream = file.getInputStream(entry);
 
-                this.allEntries.put(className, stream.readAllBytes() );
+                this.allEntries.put(className, inStream.readAllBytes() );
+
+                // Не забываем закрывать поток
+                inStream.close();
             }
+            // Не забываем закрыть считывание файла
+            file.close();
         }
-        // sort
-        this.allEntries = this.allEntries.entrySet().stream().sorted(Map.Entry.comparingByKey() )
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new) );
+        if (this.magicSort)
+            // Сортируем список по ключу (название класса) в зависимости с алфавитом.
+            // На практике позволяет подгружать сразу намного больше классов, чем ежели без этого.
+            this.allEntries = this.allEntries.entrySet().stream().sorted(Map.Entry.comparingByKey() )
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new) );
     }
 
-    private void loadClasses0() {
-        int problems = 0;
-        String tmp;
-        for (Map.Entry<String, byte[]> entry : this.allEntries.entrySet() ) {
-             if (this.loadedAlready.contains(entry.getKey() ) ) continue;
-             if ((tmp = loadClass0(entry.getKey(), entry.getValue() ) ) != null) ++problems;
-        }
-        System.out.printf("Loaded %s / %s\n", this.allEntries.size() - problems, this.allEntries.size() );
+    int loaded = 0;
 
+    private void loadClasses0() {
+        // Счётчик незагруженных классов
+        int problems = 0;
+
+//        for (Map.Entry<String, byte[]> entry : this.allEntries.entrySet() ) {
+//            // Если класс уже был загружен, то смысла его подгружать - нет
+//            if (this.loadedAlready.contains(entry.getKey() ) ) continue;
+//            // Если класс не подгрузился по какой-то причине - обновляем счётчик
+//            if (!loadClass0(entry.getKey(), entry.getValue() ) ) ++problems;
+//        }
+
+        // Более быстрый способ загрузки классов
+        Iterator<Map.Entry<String, byte[]>> it = this.allEntries.entrySet().iterator();
+        while (it.hasNext() ) {
+            Map.Entry<String, byte[]> entry = it.next();
+            if (this.loadedAlready.contains(entry.getKey() ) ) {
+                it.remove();
+                continue;
+            }
+            if (!loadClass0(entry.getKey(), entry.getValue() ) ) ++problems;
+        }
+
+        loaded += this.allEntries.size() - problems;
+
+        System.out.printf("Loaded %s / %s\n", loaded, this.allEntries.size() );
+
+        // Если есть незагруженные классы и количество прошлых незагруженных
+        // классов (из-за рекурсии) не равняется текущему количеству (в ином случае рекурсия будет бесконечной).
         if (problems != 0 && lastProblemsAmount != problems) {
             this.lastProblemsAmount = problems;
             loadClasses0();
         }
     }
 
-    private String loadClass0(String name, byte[] data) {
-        String neededClassName = null;
+    private boolean loadClass0(String name, byte[] data) {
         try {
+            // На самом деле не знаю, есть ли смысл какой лоадер использовать:
+            // PlatformClassLoader или SystemClassLoader, а так-же стоит ли указывать
+            // родительский лоадер. Так-же есть и другие аргументы функции, но они заменяемы
+            // значениями NULL и в принципе можно быть спокойным.
             INJECTOR.invoke(ClassLoader.getSystemClassLoader(),
                     ClassLoader.getSystemClassLoader(), name, data, 0, data.length, null, null);
-             this.loadedAlready.add(name);
+            // Запоминаем, что класс уже был подгружен
+            this.loadedAlready.add(name);
         } catch (Exception e) {
-            neededClassName = e.getCause().toString().split(":")[1].trim();
-            // System.out.printf("Failed to load class with name %s due to unloaded class %s: %n", name, neededClassName);
+//            System.out.printf("Failed to load class: %s\n", name);
+            return false;
         }
-        return neededClassName;
+        return true;
     }
-
-//    public void loadClasses0() throws IOException {
-//        JarFile file = this.createJar();
-//        int loaded = 0;
-//        int confirmed = 0;
-//        if (file != null) {
-//            Enumeration<JarEntry> entries = file.entries();
-//
-//            while (entries.hasMoreElements() ) {
-//                ++loaded; // counter
-//
-//                JarEntry entry = entries.nextElement();
-//
-//                if (entry.isDirectory() ) continue;
-//
-//                final String name = entry.getName();
-//
-//                if (!name.endsWith(".class") || name.endsWith("package-info.class") ) continue;
-//
-//                final String className = name.replace(".class", "").replace("/", ".");
-//
-//                InputStream stream = file.getInputStream(entry);
-//                byte[] data = stream.readAllBytes();
-//
-//                try {
-//                    INJECTOR.invoke(ClassLoader.getSystemClassLoader(),
-//                            ClassLoader.getSystemClassLoader(), className, data, 0, data.length, null, null);
-//                    ++confirmed; // if loaded
-//                    this.loadedAlready.add(className); // if loaded
-////                    System.out.printf("Loaded: %s\n", className);
-//                } catch (Exception e) {
-//                    final String neededClassName = e.getCause().toString().split(":")[1].trim();
-//                    System.out.printf("Failed to load class with name %s due to unloaded class %s: %n", className, neededClassName);
-//                }
-//            }
-//        }
-////        if (loaded != confirmed) loadClasses0();
-//        System.out.printf("Loaded %s / %s%n", confirmed, loaded);
-//    }
 }

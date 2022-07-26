@@ -7,7 +7,9 @@ import java.util.StringJoiner;
 
 public final class MavenURL implements Serializable {
 
-    private static final int STANDARD_BUFFER_SIZE = 2048;
+    // "https://{repository}/{group_id}/{artifact_id}/{version}/{artifact_id}-{version}.jar"
+    private static final String LINK_FORMAT = "%s/%s/%s/%s/%s-%s.jar";
+    private static final int STANDARD_BUFFER_SIZE = 512;
 
     private final String baseURL;
     private final int bufferSize;
@@ -26,19 +28,8 @@ public final class MavenURL implements Serializable {
                     String artifactId,
                     String version,
                     int bufferSize) {
-        StringJoiner sj = new StringJoiner(File.separator);
-        sj.add(repository.page() );
-        sj.add(groupId.replace(".", "/") );
-        sj.add(artifactId);
-        sj.add(version);
-
-        StringJoiner sj2 = new StringJoiner("-");
-        sj2.add(artifactId);
-        sj2.add(version);
-
-        sj.merge(sj2);
-
-        this.baseURL = sj.toString().replace("\\", "/") + ".jar";
+        this.baseURL = LINK_FORMAT.formatted(repository.page(),
+                groupId.replace(".", "/"), artifactId, version, artifactId, version);
         this.bufferSize = bufferSize;
     }
 
@@ -47,11 +38,10 @@ public final class MavenURL implements Serializable {
         BufferedInputStream inStream = new BufferedInputStream(getURL().openStream() );
         byte[] buffer = new byte[bufferSize];
         int count;
-        while ((count = inStream.read(buffer, 0, bufferSize)) != -1) {
-            outStream.write(buffer, 0, count); // write remaining data
-            outStream.flush(); // clear temp system buffer
+        while ((count = inStream.read(buffer, 0, bufferSize) ) != -1) {
+            outStream.write(buffer, 0, count);
+            outStream.flush();
         }
-        // close all streams
         outStream.flush();
         outStream.close();
         inStream.close();

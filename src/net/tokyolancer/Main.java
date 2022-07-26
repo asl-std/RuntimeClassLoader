@@ -8,15 +8,14 @@ import net.tokyolancer.lang.network.MavenURL;
 public class Main {
 
     public static void main(String[] args) throws Throwable {
-        MavenURL mavenURL = new MavenURL(MavenRepository.Central,
-                "commons-io", "commons-io", "2.11.0");
-        MavenClassLoader classLoader = new MavenClassLoader(mavenURL);
+        MavenURL mavenURL = new MavenURL(MavenRepository.Central,"javax", "javaee-web-api", "8.0.1");
+        MavenClassLoader classLoader = new MavenClassLoader(mavenURL, true);
         classLoader.loadClasses();
 
-        classLoader = new MavenClassLoader(MavenURL.fromMavenLibrary(MavenLibrary.OracleJDBC) );
-        classLoader.loadClasses();
-
-        Class<?> clazz = Class.forName("org.apache.commons.io.ByteOrderMark");
-        System.out.println(clazz);
+//        MavenClassLoader classLoader1 = new MavenClassLoader(MavenURL.fromMavenLibrary(MavenLibrary.ASM) );
+//        classLoader1.loadClasses();
+//
+//        Class<?> clazz = Class.forName("org.apache.commons.io.ByteOrderMark");
+//        System.out.println(clazz);
     }
 }
