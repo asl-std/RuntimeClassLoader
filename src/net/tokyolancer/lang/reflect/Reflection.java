@@ -2,18 +2,24 @@ package net.tokyolancer.lang.reflect;
 
 import sun.misc.Unsafe;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.security.ProtectionDomain;
+import java.util.List;
+
+import static sun.misc.Unsafe.getUnsafe;
 
 public class Reflection {
 
-    public static final Unsafe UNSAFE;
+    // Чтобы другие шаловливые ручки не смогли вытащить UNSAFE ы)
+    // public static final Unsafe UNSAFE;
 
     // Так называемые 'var-args' которые необходимы для определения метода
-    private static Class<?>[] OLD_DATA = new Class<?>[] {
+    private static final Class<?>[] OLD_DATA = new Class<?>[] {
             String.class,
             byte[].class,
             int.class,
@@ -22,7 +28,7 @@ public class Reflection {
             String.class
     };
 
-    private static Class<?>[] NEW_DATA = new Class<?>[] {
+    private static final Class<?>[] NEW_DATA = new Class<?>[] {
             ClassLoader.class,
             String.class,
             byte[].class,
@@ -41,10 +47,16 @@ public class Reflection {
         try {
             Field field = Unsafe.class.getDeclaredField("theUnsafe");
             field.setAccessible(true);
-            UNSAFE = (Unsafe) field.get(null);
+            // Now unsafe can be accessed directly by method getUnsafe();
+            ((Unsafe) field.get(null) ).
+                    putObject(Reflection.class, Offset.of(Class.class, "classLoader"), null);
         } catch (Exception e) {
             throw new RuntimeException("");
         }
+    }
+
+    public static Unsafe lookup() {
+        return getUnsafe();
     }
 
     public static int getRuntimeVersion() {
@@ -67,7 +79,11 @@ public class Reflection {
      * @param method The method to perform on
      */
     public static void unlockNative(Method method) {
-        UNSAFE.putInt(method, Offset.get_int_MODIFIERS(), Modifier.PUBLIC);
+        Reflection.setModifier(method, Modifier.PUBLIC);
+    }
+
+    private static void setModifier(Method method, int mod) {
+        getUnsafe().putInt(method, Offset.of(Method.class, "modifiers"), mod);
     }
 
     private static Method getDefineClassMethod() throws NoSuchMethodException {
@@ -85,6 +101,7 @@ public class Reflection {
                 break;
         }
         Reflection.unlockNative(result);
+
         return Reflection.defineClassMethod = result;
     }
 
@@ -102,5 +119,19 @@ public class Reflection {
                         ClassLoader.getSystemClassLoader(), name, data, 0, data.length, null, null);
                 break;
         }
+    }
+
+    public static boolean isClassPresents(String className, ClassLoader loader) {
+        System.out.println("Loaded classes: " + getClasses(loader).size() );
+        for (Object o : getClasses(loader) ) if (className.equals(((Class<?>) o).getName() ) ) return true;
+        return false;
+    }
+
+    private static List<?> getClasses(ClassLoader loader) {
+        return (List<?>) getUnsafe().getObject(loader, Offset.of(ClassLoader.class, "classes") );
+    }
+
+    public static void redefineClassLoader(Class<?> clazz, ClassLoader loader) {
+        getUnsafe().putObject(clazz, Offset.of(Class.class, "classLoader"), loader);
     }
 }

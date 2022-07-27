@@ -3,7 +3,6 @@ package net.tokyolancer.lang.network;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.StringJoiner;
 
 public final class MavenURL implements Serializable {
 
@@ -43,7 +42,7 @@ public final class MavenURL implements Serializable {
     }
 
     private byte[] download0() throws IOException {
-        return NetUtil.download(getURL().openStream() );
+        return NetUtil.toByteArray(getURL().openStream() );
     }
 
     public URL getURL() throws MalformedURLException {

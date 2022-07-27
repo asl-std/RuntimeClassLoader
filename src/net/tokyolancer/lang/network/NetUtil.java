@@ -8,7 +8,7 @@ public final class NetUtil {
 
     private NetUtil() { }
 
-    public static byte[] download(InputStream inputStream) throws IOException {
+    public static byte[] toByteArray(InputStream inputStream) throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         int nRead;
         byte[] data = new byte[16384];

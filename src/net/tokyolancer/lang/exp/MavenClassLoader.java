@@ -5,8 +5,6 @@ import net.tokyolancer.lang.network.NetUtil;
 import net.tokyolancer.lang.reflect.Reflection;
 
 import java.io.*;
-import java.lang.reflect.Method;
-import java.security.ProtectionDomain;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -16,28 +14,6 @@ import java.util.stream.Collectors;
  *
  */
 public final class MavenClassLoader {
-
-//    private static final Method INJECTOR;
-
-//    static {
-//        try {
-//            INJECTOR = ClassLoader.class.getDeclaredMethod(
-//                            "defineClass1",
-//                            ClassLoader.class,
-//                            String.class,
-//                            byte[].class,
-//                            int.class,
-//                            int.class,
-//                            ProtectionDomain.class,
-//                            String.class
-//                    );
-//            INJECTOR = Reflection.getDefineClassMethod();
-//            Reflection.unlockNative(INJECTOR); // unlock first
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            throw new RuntimeException();
-//        }
-//    }
 
     // Confirms that the bytes were loaded correctly (the source of this data is the download link from the Maven repository)
     private final boolean isVerified;
@@ -139,7 +115,7 @@ public final class MavenClassLoader {
                 // Считываем данные
                 InputStream inStream = file.getInputStream(entry);
 
-                this.allEntries.put(className, NetUtil.download(inStream) );
+                this.allEntries.put(className, NetUtil.toByteArray(inStream) );
 
                 // Не забываем закрывать поток
                 inStream.close();
