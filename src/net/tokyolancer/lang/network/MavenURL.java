@@ -46,8 +46,12 @@ public final class MavenURL implements Serializable {
     }
 
     public URL getURL() throws MalformedURLException {
-        if (currURL == null) return this.currURL = new URL(baseURL);
+        if (currURL == null) return this.currURL = createURL();
         return this.currURL;
+    }
+
+    public URL createURL() throws MalformedURLException {
+        return new URL(baseURL);
     }
 
     public static MavenURL fromMavenLibrary(MavenLibrary library) {

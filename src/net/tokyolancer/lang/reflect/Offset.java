@@ -22,17 +22,13 @@ public class Offset {
                 offsets.put("java.lang.ClassLoader", "parent", 12L);
                 offsets.put("java.lang.ClassLoader", "classes", 24L);
                 break;
-            case 9:
-            case 10:
-            case 11:
-                break;
             case 16:
             case 17:
-            default:
                 offsets.put("java.lang.reflect.Method","modifiers", 32L);
                 offsets.put("java.lang.Class", "module", 48L);
                 offsets.put("java.lang.Class", "classLoader", 52L);
                 offsets.put("java.lang.ClassLoader", "parent", 24L);
+                offsets.put("java.lang.ClassLoader", "classes", 48L);
                 break;
         }
     }

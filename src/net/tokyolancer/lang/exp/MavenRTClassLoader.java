@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 /**
  *
  */
-public final class MavenClassLoader {
+public final class MavenRTClassLoader {
 
     // Confirms that the bytes were loaded correctly (the source of this data is the download link from the Maven repository)
     private final boolean isVerified;
@@ -22,29 +22,29 @@ public final class MavenClassLoader {
     private final boolean magicSort;
 
     private Map<String, byte[]> allEntries = new HashMap<>();
-    private List<String> loadedAlready = new ArrayList<>();
+    // private List<?> loadedAlready = new ArrayList<>();
 
     private byte[] origin;
     private int lastProblemsAmount = -1;
 
-    public MavenClassLoader(MavenURL url) throws IOException {
+    public MavenRTClassLoader(MavenURL url) throws IOException {
         this(url, true);
     }
 
-    public MavenClassLoader(MavenURL url, boolean magicSort) throws IOException {
+    public MavenRTClassLoader(MavenURL url, boolean magicSort) throws IOException {
         this(url.download(), true, magicSort);
     }
 
     @Deprecated
-    public MavenClassLoader(byte[] data) {
+    public MavenRTClassLoader(byte[] data) {
         this(data, false);
     }
 
-    private MavenClassLoader(byte[] data, boolean isVerified) {
+    private MavenRTClassLoader(byte[] data, boolean isVerified) {
         this(data, isVerified, true);
     }
 
-    private MavenClassLoader(byte[] data, boolean isVerified, boolean magicSort) {
+    private MavenRTClassLoader(byte[] data, boolean isVerified, boolean magicSort) {
         this.origin = data;
         this.isVerified = isVerified;
         this.magicSort = magicSort;
@@ -57,7 +57,6 @@ public final class MavenClassLoader {
         // Удаляем прочие данные, потому что
         // повторная загрузка классов из одного
         // и того же экземпляра объекта - невозможна.
-        this.loadedAlready = null;
         this.allEntries = null;
     }
 
@@ -140,7 +139,12 @@ public final class MavenClassLoader {
         Iterator<Map.Entry<String, byte[]>> it = this.allEntries.entrySet().iterator();
         while (it.hasNext() ) {
             Map.Entry<String, byte[]> entry = it.next();
-            if (this.loadedAlready.contains(entry.getKey() ) ) {
+//            if (this.loadedAlready.contains(entry.getKey() ) ) {
+//                it.remove();
+//                continue;
+//            }
+            // Now can be checked directly from classloader's class-list
+            if (Reflection.isClassPresents(entry.getKey(), ClassLoader.getSystemClassLoader() ) ) {
                 it.remove();
                 continue;
             }
@@ -161,17 +165,11 @@ public final class MavenClassLoader {
 
     private boolean loadClass0(String name, byte[] data) {
         try {
-            // На самом деле не знаю, есть ли смысл какой лоадер использовать:
-            // PlatformClassLoader или SystemClassLoader, а так-же стоит ли указывать
-            // родительский лоадер. Так-же есть и другие аргументы функции, но они заменяемы
-            // значениями NULL и в принципе можно быть спокойным.
-//            INJECTOR.invoke(ClassLoader.getSystemClassLoader(),
-//                    ClassLoader.getSystemClassLoader(), name, data, 0, data.length, null, null);
             Reflection.defineClass(name, data);
             // Запоминаем, что класс уже был подгружен
-            this.loadedAlready.add(name);
-        } catch (Exception e) {
-//            e.printStackTrace();
+            // this.loadedAlready.add(name);
+        } catch (Exception ignored) {
+//            ignored.printStackTrace();
 //            System.out.printf("Failed to load class: %s\n", name);
             return false;
         }

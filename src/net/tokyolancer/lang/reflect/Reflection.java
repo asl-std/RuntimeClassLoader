@@ -2,21 +2,22 @@ package net.tokyolancer.lang.reflect;
 
 import sun.misc.Unsafe;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.security.ProtectionDomain;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static sun.misc.Unsafe.getUnsafe;
 
+@SuppressWarnings("all")
 public class Reflection {
 
-    // Чтобы другие шаловливые ручки не смогли вытащить UNSAFE ы)
-    // public static final Unsafe UNSAFE;
+    // Более быстрый способ для фетча значений
+    private static final Map<ClassLoader, List<?>> cachedLoaders = new HashMap<>();
 
     // Так называемые 'var-args' которые необходимы для определения метода
     private static final Class<?>[] OLD_DATA = new Class<?>[] {
@@ -105,8 +106,8 @@ public class Reflection {
         return Reflection.defineClassMethod = result;
     }
 
-    public static void defineClass(String name, byte[] data) throws NoSuchMethodException,
-            InvocationTargetException, IllegalAccessException {
+    public static void defineClass(String name, byte[] data)
+            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         switch (Reflection.getRuntimeVersion() ) {
             case 8:
                 getDefineClassMethod().invoke(ClassLoader.getSystemClassLoader(),
@@ -122,13 +123,16 @@ public class Reflection {
     }
 
     public static boolean isClassPresents(String className, ClassLoader loader) {
-        System.out.println("Loaded classes: " + getClasses(loader).size() );
-        for (Object o : getClasses(loader) ) if (className.equals(((Class<?>) o).getName() ) ) return true;
+        List<?> fetched = Reflection.cachedLoaders.get(loader);
+        if (fetched == null) fetched = Reflection.getClasses(loader);
+        for (Object o : fetched) if (className.equals(((Class<?>) o).getName() ) ) return true;
         return false;
     }
 
     private static List<?> getClasses(ClassLoader loader) {
-        return (List<?>) getUnsafe().getObject(loader, Offset.of(ClassLoader.class, "classes") );
+        List<?> result = (List<?>) getUnsafe().getObject(loader, Offset.of(ClassLoader.class, "classes") );
+        Reflection.cachedLoaders.put(loader, result);
+        return result;
     }
 
     public static void redefineClassLoader(Class<?> clazz, ClassLoader loader) {
