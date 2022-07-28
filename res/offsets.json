@@ -1,0 +1,72 @@
+{
+  "JAVA_8": {
+    "classes": [
+      {
+        "name": "java.lang.reflect.Method",
+        "fields": [
+          {
+            "name": "modifiers",
+            "offset": 36
+          },
+          {
+            "name": "clazz",
+            "offset": 40
+          },
+          {
+            "name": "methodAccessor",
+            "offset": 80
+          }
+        ]
+      },
+      {
+        "name": "java.lang.Class",
+        "fields": [
+          {
+            "name": "classLoader",
+            "offset": 24
+          }
+        ]
+      },
+      {
+        "name": "java.lang.ClassLoader",
+        "fields": [
+          {
+            "name": "parent",
+            "offset": 12
+          },
+          {
+            "name": "classes",
+            "offset": 24
+          }
+        ]
+      }
+    ]
+  },
+  "JAVA_9": {
+    "classes": []
+  },
+  "JAVA_10": {
+    "classes": []
+  },
+  "JAVA_11": {
+    "classes": []
+  },
+  "JAVA_12": {
+    "classes": []
+  },
+  "JAVA_13": {
+    "classes": []
+  },
+  "JAVA_14": {
+    "classes": []
+  },
+  "JAVA_15": {
+    "classes": []
+  },
+  "JAVA_16": {
+    "classes": []
+  },
+  "JAVA_17": {
+    "classes": []
+  }
+}

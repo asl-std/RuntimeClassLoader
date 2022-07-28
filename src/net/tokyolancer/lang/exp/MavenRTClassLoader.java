@@ -139,10 +139,6 @@ public final class MavenRTClassLoader {
         Iterator<Map.Entry<String, byte[]>> it = this.allEntries.entrySet().iterator();
         while (it.hasNext() ) {
             Map.Entry<String, byte[]> entry = it.next();
-//            if (this.loadedAlready.contains(entry.getKey() ) ) {
-//                it.remove();
-//                continue;
-//            }
             // Now can be checked directly from classloader's class-list
             if (Reflection.isClassPresents(entry.getKey(), ClassLoader.getSystemClassLoader() ) ) {
                 it.remove();
@@ -166,11 +162,9 @@ public final class MavenRTClassLoader {
     private boolean loadClass0(String name, byte[] data) {
         try {
             Reflection.defineClass(name, data);
-            // Запоминаем, что класс уже был подгружен
-            // this.loadedAlready.add(name);
         } catch (Exception ignored) {
-//            ignored.printStackTrace();
-//            System.out.printf("Failed to load class: %s\n", name);
+            // ignored.printStackTrace();
+            // System.out.printf("Failed to load class: %s\n", name);
             return false;
         }
         return true;

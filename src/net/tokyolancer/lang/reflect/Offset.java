@@ -17,6 +17,8 @@ public class Offset {
         switch (Reflection.getRuntimeVersion() ) {
             case 8:
                 offsets.put("java.lang.reflect.Method","modifiers", 36L);
+                offsets.put("java.lang.reflect.Method", "clazz", 40L);
+                offsets.put("java.lang.reflect.Method", "methodAccessor", 80L);
                 // module missing
                 offsets.put("java.lang.Class", "classLoader", 24L);
                 offsets.put("java.lang.ClassLoader", "parent", 12L);
@@ -25,6 +27,8 @@ public class Offset {
             case 16:
             case 17:
                 offsets.put("java.lang.reflect.Method","modifiers", 32L);
+                offsets.put("java.lang.reflect.Method", "clazz", 36L);
+                offsets.put("java.lang.reflect.Method", "methodAccessor", 76L);
                 offsets.put("java.lang.Class", "module", 48L);
                 offsets.put("java.lang.Class", "classLoader", 52L);
                 offsets.put("java.lang.ClassLoader", "parent", 24L);

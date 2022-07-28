@@ -90,34 +90,38 @@ public class Reflection {
     private static Method getDefineClassMethod() throws NoSuchMethodException {
         if (Reflection.defineClassMethod != null) return Reflection.defineClassMethod;
 
-        Method result;
+//        Method result;
         switch (Reflection.getRuntimeVersion() ) {
             case 8:
-                result = ClassLoader.class.getDeclaredMethod("defineClass1", Reflection.OLD_DATA);
+                Reflection.defineClassMethod = ClassLoader.class.getDeclaredMethod("defineClass1", Reflection.OLD_DATA);
                 break;
             case 16:
             case 17:
             default:
-                result = ClassLoader.class.getDeclaredMethod("defineClass1", Reflection.NEW_DATA);
+                Reflection.defineClassMethod = ClassLoader.class.getDeclaredMethod("defineClass1", Reflection.NEW_DATA);
                 break;
         }
-        Reflection.unlockNative(result);
+//         Reflection.unlockNative(result);
 
-        return Reflection.defineClassMethod = result;
+        return Reflection.defineClassMethod;
     }
 
     public static void defineClass(String name, byte[] data)
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         switch (Reflection.getRuntimeVersion() ) {
             case 8:
-                getDefineClassMethod().invoke(ClassLoader.getSystemClassLoader(),
-                        name, data, 0, data.length, null, null);
+                Reflection.godInvoke(getDefineClassMethod(),
+                        ClassLoader.getSystemClassLoader(), name, data, 0, data.length, null, null);
+//                getDefineClassMethod().invoke(ClassLoader.getSystemClassLoader(),
+//                        name, data, 0, data.length, null, null);
                 break;
             case 16:
             case 17:
             default:
-                getDefineClassMethod().invoke(ClassLoader.getSystemClassLoader(),
+                Reflection.godInvoke(getDefineClassMethod(), ClassLoader.getSystemClassLoader(),
                         ClassLoader.getSystemClassLoader(), name, data, 0, data.length, null, null);
+//                getDefineClassMethod().invoke(ClassLoader.getSystemClassLoader(),
+//                        ClassLoader.getSystemClassLoader(), name, data, 0, data.length, null, null);
                 break;
         }
     }
@@ -137,5 +141,22 @@ public class Reflection {
 
     public static void redefineClassLoader(Class<?> clazz, ClassLoader loader) {
         getUnsafe().putObject(clazz, Offset.of(Class.class, "classLoader"), loader);
+    }
+
+    /**
+     * Allows you to call invoke on an instance of a method with <b>all privileges</b> (= the same as calling native code)
+     *
+     * @param method The method to be executed
+     * @param o The object the underlying method is invoked from
+     * @param args The arguments used for the method call
+     * @return The result of dispatching the method represented by this object on obj with parameters args
+     * @throws InvocationTargetException If the underlying method throws an exception
+     * @throws IllegalAccessException If this Method object is enforcing Java language access control and the underlying method is inaccessible
+     */
+    public static Object godInvoke(Method method, Object o, Object... args)
+            throws InvocationTargetException, IllegalAccessException {
+        Reflection.unlockNative(method); // will remove all modifiers
+        getUnsafe().putObject(method, Offset.of(Method.class, "clazz"), method.getDeclaringClass() ); // magic
+        return method.invoke(o, args);
     }
 }
