@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 /**
  *
  */
-public final class MavenRTClassLoader {
+public final class MavenClassLoader {
 
     // Confirms that the bytes were loaded correctly (the source of this data is the download link from the Maven repository)
     private final boolean isVerified;
@@ -27,24 +27,24 @@ public final class MavenRTClassLoader {
     private byte[] origin;
     private int lastProblemsAmount = -1;
 
-    public MavenRTClassLoader(MavenURL url) throws IOException {
+    public MavenClassLoader(MavenURL url) throws IOException {
         this(url, true);
     }
 
-    public MavenRTClassLoader(MavenURL url, boolean magicSort) throws IOException {
+    public MavenClassLoader(MavenURL url, boolean magicSort) throws IOException {
         this(url.download(), true, magicSort);
     }
 
     @Deprecated
-    public MavenRTClassLoader(byte[] data) {
+    public MavenClassLoader(byte[] data) {
         this(data, false);
     }
 
-    private MavenRTClassLoader(byte[] data, boolean isVerified) {
+    private MavenClassLoader(byte[] data, boolean isVerified) {
         this(data, isVerified, true);
     }
 
-    private MavenRTClassLoader(byte[] data, boolean isVerified, boolean magicSort) {
+    private MavenClassLoader(byte[] data, boolean isVerified, boolean magicSort) {
         this.origin = data;
         this.isVerified = isVerified;
         this.magicSort = magicSort;
@@ -163,6 +163,7 @@ public final class MavenRTClassLoader {
         try {
             Reflection.defineClass(name, data);
         } catch (Exception ignored) {
+            ignored.printStackTrace();
             // ignored.printStackTrace();
             // System.out.printf("Failed to load class: %s\n", name);
             return false;

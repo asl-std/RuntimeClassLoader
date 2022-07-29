@@ -1,4 +1,4 @@
-package net.tokyolancer.lang.exp;
+package net.tokyolancer.lang.util;
 
 import java.util.HashMap;
 import java.util.Map;

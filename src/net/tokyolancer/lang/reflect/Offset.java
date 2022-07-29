@@ -1,25 +1,27 @@
 package net.tokyolancer.lang.reflect;
 
-import net.tokyolancer.lang.exp.MultiKeyMap;
+import net.tokyolancer.lang.util.MultiKeyMap;
 
-public class Offset {
+final class Offset {
+
+    private Offset() { System.exit(0); }
 
     // -- Fields offsets -- //
 
-    // Storage data like:
-    // class name, field name, field offset
-    // Contains only verified offsets
+    // Хранит информацию в виде:
+    // Название класса, Название поля в классе, Оффсет в памяти
     private static final MultiKeyMap<String, String, Long> offsets = new MultiKeyMap<>();
 
     static {
-        // Load all offsets for current JVM Version
-        // Currently supports only Java SE 8 and Java 16, 17
+        // Подгружает оффсеты объектов в памяти для текущей версии JVM.
+        // Поддерживает только Java 8, 16, 17
         switch (Reflection.getRuntimeVersion() ) {
             case 8:
                 offsets.put("java.lang.reflect.Method","modifiers", 36L);
                 offsets.put("java.lang.reflect.Method", "clazz", 40L);
                 offsets.put("java.lang.reflect.Method", "methodAccessor", 80L);
-                // module missing
+                // Здесь оффсета на модуль нет, потому что его ещё не добавили.
+                // P.S. Из-за этого вылилась огромная херня в классе Reflection
                 offsets.put("java.lang.Class", "classLoader", 24L);
                 offsets.put("java.lang.ClassLoader", "parent", 12L);
                 offsets.put("java.lang.ClassLoader", "classes", 24L);
@@ -37,11 +39,23 @@ public class Offset {
         }
     }
 
+    /**
+     *
+     * Gets the offset of the required field in the specified class.
+     * If the field is not indicated in the list of current offsets,
+     * the NullPointerException error will be thrown and the execution
+     * of the function (which uses the current method) will be interrupted
+     * before the JVM is disconnected due to a non-existent address in memory.
+     *
+     * @param clazz The class from which to get the offset of the required field
+     * @param fieldName The exact field name from which offset will be fetched
+     * @return Current JVM offset of the field
+     */
     public static long of(Class<?> clazz, String fieldName) {
-        return Offset.of(clazz.getSimpleName(), fieldName);
+        return Offset.of0(clazz.getSimpleName(), fieldName);
     }
 
-    private static Long of(String className, String fieldName) {
+    private static Long of0(String className, String fieldName) {
         return Offset.offsets.get(className, fieldName);
     }
 }
