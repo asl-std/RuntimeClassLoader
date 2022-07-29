@@ -4,7 +4,7 @@ import net.tokyolancer.lang.util.MultiKeyMap;
 
 final class Offset {
 
-    private Offset() { System.exit(0); }
+    private Offset() { }
 
     // -- Fields offsets -- //
 
@@ -15,7 +15,7 @@ final class Offset {
     static {
         // Подгружает оффсеты объектов в памяти для текущей версии JVM.
         // Поддерживает только Java 8, 16, 17
-        switch (Reflection.getRuntimeVersion() ) {
+        switch (ReflectionImpl.getRuntimeVersion() ) {
             case 8:
                 offsets.put("java.lang.reflect.Method","modifiers", 36L);
                 offsets.put("java.lang.reflect.Method", "clazz", 40L);

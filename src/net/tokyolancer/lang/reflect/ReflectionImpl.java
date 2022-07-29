@@ -1,5 +1,6 @@
 package net.tokyolancer.lang.reflect;
 
+import net.tokyolancer.lang.api.Reflection;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
@@ -13,9 +14,7 @@ import static sun.misc.Unsafe.getUnsafe;
 
 // Не советую убирать данную вещь или она испортит тебе глаза (я предупредил)
 @SuppressWarnings("all")
-public class Reflection {
-
-    private Reflection() { System.exit(0); }
+final class ReflectionImpl extends Reflection {
 
     // Более быстрый способ для получения значений
     private static final Map<ClassLoader, List<?>> cachedLoaders = new HashMap<>();
@@ -37,24 +36,34 @@ public class Reflection {
     // used for cache
     private static int runtimeVersion = -1;
 
+    // must be defined by constructor
+    private static final ReflectionImpl root = null;
+
     static {
         try {
             Field field = Unsafe.class.getDeclaredField("theUnsafe");
             field.setAccessible(true);
             // Now unsafe can be accessed directly by method getUnsafe();
             ((Unsafe) field.get(null) ).
-                    putObject(Reflection.class, Offset.of(Class.class, "classLoader"), null);
+                    putObject(ReflectionImpl.class, Offset.of(Class.class, "classLoader"), null);
             // Hiding classes from Java Reflection API
-            Reflection.hideFromReflection(Reflection.class);
-            Reflection.hideFromReflection(Offset.class);
+            ReflectionImpl.hideFromReflection(ReflectionImpl.class);
+            ReflectionImpl.hideFromReflection(Offset.class);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static Unsafe lookup() {
-        return getUnsafe();
+    // caching it-self
+    ReflectionImpl() { getUnsafe().putObject(ReflectionImpl.class, 136, this); }
+
+    static ReflectionImpl cached() {
+        if (ReflectionImpl.root == null)
+            return new ReflectionImpl();
+        return ReflectionImpl.root;
     }
+
+    public static Unsafe lookup() { return getUnsafe(); }
 
     /**
      *
@@ -62,17 +71,17 @@ public class Reflection {
      *
      * @return Runtime version in parsed view (8 - JAVA 1.8, 16 - JAVA 16 and etc.)
      */
-    public static @Cached int getRuntimeVersion() {
-        if (Reflection.runtimeVersion == -1) {
+    static @Cached int getRuntimeVersion() {
+        if (ReflectionImpl.runtimeVersion == -1) {
             String version = System.getProperty("java.version");
             if (version.startsWith("1.") ) version = version.substring(2, 3);
             else {
                 int dot = version.indexOf(".");
                 if (dot != -1) version = version.substring(0, dot);
             }
-            Reflection.runtimeVersion = Integer.parseInt(version);
+            ReflectionImpl.runtimeVersion = Integer.parseInt(version);
         }
-        return Reflection.runtimeVersion;
+        return ReflectionImpl.runtimeVersion;
     }
 
     /**
@@ -82,8 +91,9 @@ public class Reflection {
      *
      * @param method The method to perform on
      */
-    public static void unlockNative(Method method) {
-        Reflection.setModifier(method, Modifier.PUBLIC);
+    @Override
+    public void unlockNative(Method method) {
+        ReflectionImpl.setModifier(method, Modifier.PUBLIC);
     }
 
     /**
@@ -106,19 +116,19 @@ public class Reflection {
      * @throws NoSuchMethodException This error cannot be throwned, but it will have to be handled (because I am pussy)
      */
     private static @Cached Method getDefineClassMethod() throws NoSuchMethodException {
-        if (Reflection.defineClassMethod == null) {
-            switch (Reflection.getRuntimeVersion() ) {
+        if (ReflectionImpl.defineClassMethod == null) {
+            switch (ReflectionImpl.getRuntimeVersion() ) {
                 case 8:
-                    Reflection.defineClassMethod = ClassLoader.class.getDeclaredMethod("defineClass1", Reflection.OLD_DATA);
+                    ReflectionImpl.defineClassMethod = ClassLoader.class.getDeclaredMethod("defineClass1", ReflectionImpl.OLD_DATA);
                     break;
                 case 16:
                 case 17:
                 default:
-                    Reflection.defineClassMethod = ClassLoader.class.getDeclaredMethod("defineClass1", Reflection.NEW_DATA);
+                    ReflectionImpl.defineClassMethod = ClassLoader.class.getDeclaredMethod("defineClass1", ReflectionImpl.NEW_DATA);
                     break;
             }
         }
-        return Reflection.defineClassMethod;
+        return ReflectionImpl.defineClassMethod;
     }
 
     /**
@@ -132,17 +142,18 @@ public class Reflection {
      * @throws InvocationTargetException If the data or name is incorrect (check docs before using this method)
      * @throws IllegalAccessException This error cannot be throwned, but it will have to be handled (because I am pussy)
      */
-    public static void defineClass(String name, byte[] data)
+    @Override
+    public void defineClass(String name, byte[] data)
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        switch (Reflection.getRuntimeVersion() ) {
+        switch (ReflectionImpl.getRuntimeVersion() ) {
             case 8:
-                Reflection.godInvoke(getDefineClassMethod(),
+                this.godInvoke(getDefineClassMethod(),
                         ClassLoader.getSystemClassLoader(), name, data, 0, data.length, null, null);
                 break;
             case 16:
             case 17:
             default:
-                Reflection.godInvoke(getDefineClassMethod(), ClassLoader.getSystemClassLoader(),
+                this.godInvoke(getDefineClassMethod(), ClassLoader.getSystemClassLoader(),
                         ClassLoader.getSystemClassLoader(), name, data, 0, data.length, null, null);
                 break;
         }
@@ -156,9 +167,10 @@ public class Reflection {
      * @param loader Exact class loader
      * @return If loaded - true, otherwise - false
      */
-    public static @Cached boolean isClassPresents(String className, ClassLoader loader) {
-        List<?> fetched = Reflection.cachedLoaders.get(loader);
-        if (fetched == null) fetched = Reflection.getClasses(loader);
+    @Override
+    public @Cached boolean isClassPresents(String className, ClassLoader loader) {
+        List<?> fetched = ReflectionImpl.cachedLoaders.get(loader);
+        if (fetched == null) fetched = ReflectionImpl.getClasses(loader);
         for (Object o : fetched) if (className.equals(((Class<?>) o).getName() ) ) return true;
         return false;
     }
@@ -172,7 +184,7 @@ public class Reflection {
      */
     private static List<?> getClasses(ClassLoader loader) {
         List<?> result = (List<?>) getUnsafe().getObject(loader, Offset.of(ClassLoader.class, "classes") );
-        Reflection.cachedLoaders.put(loader, result);
+        ReflectionImpl.cachedLoaders.put(loader, result);
         return result;
     }
 
@@ -183,7 +195,8 @@ public class Reflection {
      * @param clazz Exact class
      * @param loader Exact class loader
      */
-    public static void redefineClassLoader(Class<?> clazz, ClassLoader loader) {
+    @Override
+    public void redefineClassLoader(Class<?> clazz, ClassLoader loader) {
         getUnsafe().putObject(clazz, Offset.of(Class.class, "classLoader"), loader);
     }
 
@@ -197,9 +210,10 @@ public class Reflection {
      * @throws InvocationTargetException If the underlying method throws an exception
      * @throws IllegalAccessException If this Method object is enforcing Java language access control and the underlying method is inaccessible
      */
-    public static Object godInvoke(Method method, Object o, Object... args)
+    @Override
+    public Object godInvoke(Method method, Object o, Object... args)
             throws InvocationTargetException, IllegalAccessException {
-        Reflection.unlockNative(method); // will remove all modifiers
+        this.unlockNative(method); // will remove all modifiers
         Object tmp = getUnsafe().getObject(method, Offset.of(Method.class, "clazz") );
         // Вот здесь, честное слово, магия ебейшая, я сам не знаю почему это работает, но оставлю это так
         // P.S. Причём я понял, что это не должно работать, только спустя некоторое время после релиза этого метода
@@ -210,74 +224,76 @@ public class Reflection {
 
     private static @Cached Class<?> getInternalReflectionClass()
             throws ClassNotFoundException {
-        if (Reflection.internalReflectionClass == null) {
-            switch (Reflection.getRuntimeVersion() ) {
+        if (ReflectionImpl.internalReflectionClass == null) {
+            switch (ReflectionImpl.getRuntimeVersion() ) {
                 case 8:
-                    Reflection.internalReflectionClass = Class.forName("sun.reflect.Reflection");
+                    ReflectionImpl.internalReflectionClass = Class.forName("sun.reflect.Reflection");
                     break;
                 case 16:
                 case 17:
                 default:
-                    Reflection.internalReflectionClass = Class.forName("jdk.internal.reflect.Reflection");
+                    ReflectionImpl.internalReflectionClass = Class.forName("jdk.internal.reflect.Reflection");
                     break;
             }
         }
-        return Reflection.internalReflectionClass;
+        return ReflectionImpl.internalReflectionClass;
     }
 
     private static @Cached Method getHideFieldsMethod()
             throws ClassNotFoundException, NoSuchMethodException {
-        if (Reflection.hideFieldsMethod == null) {
-            switch (Reflection.getRuntimeVersion() ) {
+        if (ReflectionImpl.hideFieldsMethod == null) {
+            switch (ReflectionImpl.getRuntimeVersion() ) {
                 case 8:
-                    Reflection.hideFieldsMethod = getInternalReflectionClass()
+                    ReflectionImpl.hideFieldsMethod = getInternalReflectionClass()
                             .getDeclaredMethod("registerFieldsToFilter", Class.class, String[].class);
                     break;
                 case 16:
                 case 17:
                 default:
-                    Reflection.hideFieldsMethod = getInternalReflectionClass().
+                    ReflectionImpl.hideFieldsMethod = getInternalReflectionClass().
                             getDeclaredMethod("registerFieldsToFilter", Class.class, Set.class);
                     break;
             }
         }
-        return Reflection.hideFieldsMethod;
+        return ReflectionImpl.hideFieldsMethod;
     }
 
     private static @Cached Method getHideMethodsMethod()
             throws ClassNotFoundException, NoSuchMethodException {
-        if (Reflection.hideMethodsMethod == null) {
-            switch (Reflection.getRuntimeVersion() ) {
+        if (ReflectionImpl.hideMethodsMethod == null) {
+            switch (ReflectionImpl.getRuntimeVersion() ) {
                 case 8:
-                    Reflection.hideMethodsMethod = getInternalReflectionClass()
+                    ReflectionImpl.hideMethodsMethod = getInternalReflectionClass()
                             .getDeclaredMethod("registerMethodsToFilter", Class.class, String[].class);
                     break;
                 case 16:
                 case 17:
                 default:
-                    Reflection.hideMethodsMethod = getInternalReflectionClass().
+                    ReflectionImpl.hideMethodsMethod = getInternalReflectionClass().
                             getDeclaredMethod("registerMethodsToFilter", Class.class, Set.class);
                     break;
             }
         }
-        return Reflection.hideMethodsMethod;
+        return ReflectionImpl.hideMethodsMethod;
     }
 
     private static @Cached Object getWildcardObject() {
-        if (Reflection.wildcardObject == null) {
-            switch (Reflection.getRuntimeVersion() ) {
+        if (ReflectionImpl.wildcardObject == null) {
+            switch (ReflectionImpl.getRuntimeVersion() ) {
                 case 8:
-                    Reflection.wildcardObject = new String[] {
+                    ReflectionImpl.wildcardObject = new String[] {
                             // fields from Reflection.java
                             "cachedLoaders", "OLD_DATA", "NEW_DATA",
                             "defineClassMethod", "hideMethodsMethod", "hideFieldsMethod",
                             "internalReflectionClass", "wildcardObject", "runtimeVersion",
+                            "root",
                             // methods from Reflection.java
                             "getClasses", "defineClass", "lookup",
                             "setModifier", "unlockNative", "isClassPresents",
                             "godInvoke", "hideFromReflection", "getWildcardObject",
                             "redefineClassLoader", "getHideMethodsMethod", "getDefineClassMethod",
                             "getRuntimeVersion", "getHideFieldsMethod", "getInternalReflectionClass",
+                            "cached",
                             // fields from Offset.java
                             "offsets",
                             // methods from Offset.java
@@ -289,11 +305,11 @@ public class Reflection {
                 default:
                     Set<String> set = new HashSet<>();
                     set.add("*");
-                    Reflection.wildcardObject = set;
+                    ReflectionImpl.wildcardObject = set;
                     break;
             }
         }
-        return Reflection.wildcardObject;
+        return ReflectionImpl.wildcardObject;
     }
 
     /**
@@ -316,8 +332,8 @@ public class Reflection {
             // getInternalReflectionClass(), метод getModule(), то версия жабы #8
             // пошлёт нас далеко за горы и скажет, что такого метода нет.
             Class<?> internalClass = getInternalReflectionClass();
-            Object module = Reflection.lookup().getObject(internalClass, Offset.of(Class.class, "module") );
-            Reflection.lookup().putObject(Reflection.class, Offset.of(Class.class, "module"), module);
+            Object module = ReflectionImpl.lookup().getObject(internalClass, Offset.of(Class.class, "module") );
+            ReflectionImpl.lookup().putObject(ReflectionImpl.class, Offset.of(Class.class, "module"), module);
         }
         // В общем, есть такое волшебное поле - override в классе
         // AccessibleObject и оно влияет на то, будет ли вызываться проверка

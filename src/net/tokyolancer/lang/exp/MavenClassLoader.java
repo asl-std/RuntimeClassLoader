@@ -2,7 +2,7 @@ package net.tokyolancer.lang.exp;
 
 import net.tokyolancer.lang.network.MavenURL;
 import net.tokyolancer.lang.network.NetUtil;
-import net.tokyolancer.lang.reflect.Reflection;
+import net.tokyolancer.lang.reflect.ReflectionFactory;
 
 import java.io.*;
 import java.util.*;
@@ -22,7 +22,6 @@ public final class MavenClassLoader {
     private final boolean magicSort;
 
     private Map<String, byte[]> allEntries = new HashMap<>();
-    // private List<?> loadedAlready = new ArrayList<>();
 
     private byte[] origin;
     private int lastProblemsAmount = -1;
@@ -140,7 +139,7 @@ public final class MavenClassLoader {
         while (it.hasNext() ) {
             Map.Entry<String, byte[]> entry = it.next();
             // Now can be checked directly from classloader's class-list
-            if (Reflection.isClassPresents(entry.getKey(), ClassLoader.getSystemClassLoader() ) ) {
+            if (ReflectionFactory.createReflection().isClassPresents(entry.getKey(), ClassLoader.getSystemClassLoader() ) ) {
                 it.remove();
                 continue;
             }
@@ -161,9 +160,8 @@ public final class MavenClassLoader {
 
     private boolean loadClass0(String name, byte[] data) {
         try {
-            Reflection.defineClass(name, data);
+            ReflectionFactory.createReflection().defineClass(name, data);
         } catch (Exception ignored) {
-            ignored.printStackTrace();
             // ignored.printStackTrace();
             // System.out.printf("Failed to load class: %s\n", name);
             return false;
