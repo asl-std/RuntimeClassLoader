@@ -29,16 +29,16 @@ _At the moment, the library supports the following OS and Java Environment:_
 
 1. Download compiled lib from releases or just download sources and compile it-self
 
-2. Create an instance of the _MavenURL_ object and specify arguments based on their name (P.S. the default repository is _Repository.Central_):
+2. Create an instance of the ```MavenURL``` object and specify arguments based on their name (P.S. the default repository is _Repository.Central_):
 ![example_1_0](https://user-images.githubusercontent.com/89454799/181917265-269141b8-526e-41ef-b3f0-2d4578608ca1.png)
 
-3. Create an instance of the _MavenClassLoader_ object by specifying the created reference to the Maven library in the arguments:
+3. Create an instance of the ```MavenClassLoader``` object by specifying the created reference to the Maven library in the arguments:
 ![example_1_1](https://user-images.githubusercontent.com/89454799/181917379-8d6c9fb0-9471-4c62-b595-7fbff78292a2.png)
 
-4. Then invoke the method _loadClasses()_ and wait for some time, while the libraries classes will be loaded:
+4. Then invoke the method ```MavenClassLoader#loadClasses()``` and wait for some time, while the libraries classes will be loaded:
 ![example_1_2](https://user-images.githubusercontent.com/89454799/181917542-8bcba9bd-9241-4bc1-8301-cbc78020b8d1.png)
 
-<strong>Also,<strong> if necessary, you can catch an error when creating an instance of MavenClassLoader:
+<strong>Also,</strong> if necessary, you can catch an error when creating an instance of ```MavenClassLoader```:
 ![carbon (5)](https://user-images.githubusercontent.com/89454799/181918599-7ede16f0-de52-4efd-90ce-1b2f6dc3c313.png)
 
 </details>
