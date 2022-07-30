@@ -1,18 +1,16 @@
 package net.tokyolancer.lang.network;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 
 public final class MavenURL implements Serializable {
 
     // "{repository}/{group_id}/{artifact_id}/{version}/{artifact_id}-{version}.jar"
     private static final String LINK_FORMAT = "%s/%s/%s/%s/%s-%s.jar";
-    private static final int STANDARD_BUFFER_SIZE = 1024 * 3;
 
     private final String baseURL;
-    private final int bufferSize;
 
     private URL currURL;
 
@@ -20,19 +18,8 @@ public final class MavenURL implements Serializable {
                     String groupId,
                     String artifactId,
                     String version) {
-        this(repository, groupId, artifactId, version, STANDARD_BUFFER_SIZE);
-    }
-
-    public MavenURL(MavenRepository repository,
-                    String groupId,
-                    String artifactId,
-                    String version,
-                    int bufferSize) {
         this.baseURL = String.format(LINK_FORMAT, repository.page(),
                 groupId.replace(".", "/"), artifactId, version, artifactId, version);
-//        this.baseURL = LINK_FORMAT.formatted(repository.page(),
-//                groupId.replace(".", "/"), artifactId, version, artifactId, version);
-        this.bufferSize = bufferSize;
     }
 
     public byte[] download() throws IOException {

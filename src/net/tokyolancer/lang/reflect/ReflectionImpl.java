@@ -37,7 +37,7 @@ final class ReflectionImpl extends Reflection {
     private static int runtimeVersion = -1;
 
     // must be defined by constructor
-    private static final ReflectionImpl root = null;
+    private static ReflectionImpl root = null;
 
     static {
         try {
@@ -55,7 +55,7 @@ final class ReflectionImpl extends Reflection {
     }
 
     // caching it-self
-    ReflectionImpl() { getUnsafe().putObject(ReflectionImpl.class, 136, this); }
+    ReflectionImpl() { ReflectionImpl.root = this; }
 
     static ReflectionImpl cached() {
         if (ReflectionImpl.root == null)
@@ -337,8 +337,7 @@ final class ReflectionImpl extends Reflection {
         }
         // В общем, есть такое волшебное поле - override в классе
         // AccessibleObject и оно влияет на то, будет ли вызываться проверка
-        // на разные штуки (вроде совместимости пакейджа, модиферов и прочего) при
-        // вызове invoke() у метода.
+        // на разные штуки (вроде совместимости пакейджа, модиферов и прочего)
         //
         // Так-как в JAVA 8 видимо не думали о том, что появятся такие гении как мы
         // (которые захотят в рантайме грузить кастом классы и редефайнить класслоадеры),
