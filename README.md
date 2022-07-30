@@ -38,4 +38,7 @@ _At the moment, the library supports the following OS and Java Environment:_
 4. Then invoke the method _loadClasses()_ and wait for some time, while the libraries classes will be loaded:
 ![example_1_2](https://user-images.githubusercontent.com/89454799/181917542-8bcba9bd-9241-4bc1-8301-cbc78020b8d1.png)
 
+<strong>Also,<strong> if necessary, you can catch an error when creating an instance of MavenClassLoader:
+![carbon (5)](https://user-images.githubusercontent.com/89454799/181918599-7ede16f0-de52-4efd-90ce-1b2f6dc3c313.png)
+
 </details>
