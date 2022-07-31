@@ -1,13 +1,14 @@
 package net.tokyolancer.lang.api;
 
 import net.tokyolancer.lang.reflect.Cached;
-import net.tokyolancer.lang.reflect.ReflectionFactory;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public abstract class Reflection {
+
+    public abstract Unsafe lookup();
 
     public abstract void unlockNative(Method method);
 

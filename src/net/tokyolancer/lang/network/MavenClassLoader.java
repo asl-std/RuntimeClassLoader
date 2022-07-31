@@ -1,4 +1,4 @@
-package net.tokyolancer.lang.exp;
+package net.tokyolancer.lang.network;
 
 import net.tokyolancer.lang.network.MavenURL;
 import net.tokyolancer.lang.network.NetUtil;
@@ -121,11 +121,12 @@ public final class MavenClassLoader {
             // Не забываем закрыть считывание файла
             file.close();
         }
-        if (this.magicSort)
+        if (this.magicSort) {
             // Сортируем список по ключу (название класса) в зависимости с алфавитом.
             // На практике позволяет подгружать сразу намного больше классов, чем ежели без этого.
             this.allEntries = this.allEntries.entrySet().stream().sorted(Map.Entry.comparingByKey() )
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new) );
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (k, v) -> k, LinkedHashMap::new) );
+        }
     }
 
     int loaded = 0;

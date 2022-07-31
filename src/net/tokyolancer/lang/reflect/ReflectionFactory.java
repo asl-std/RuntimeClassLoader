@@ -4,10 +4,10 @@ import net.tokyolancer.lang.api.Reflection;
 
 public final class ReflectionFactory {
 
-    ReflectionFactory() { }
+    private ReflectionFactory() { }
 
     public static Reflection createReflection() {
-        ReflectionFactory.preInitializeImpl(); // will be cached by Class.class
+        ReflectionFactory.preInitializeImpl(); // will be cached by Class.class (next init <= 20 nano)
         return ReflectionImpl.cached();
     }
 

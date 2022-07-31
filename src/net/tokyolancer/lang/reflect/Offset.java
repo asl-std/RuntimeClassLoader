@@ -10,7 +10,7 @@ final class Offset {
 
     // Хранит информацию в виде:
     // Название класса, Название поля в классе, Оффсет в памяти
-    private static final MultiKeyMap<String, String, Long> offsets = new MultiKeyMap<>();
+    private static final MultiKeyMap<String, String, Long> offsets = new MultiKeyMap<>(7);
 
     static {
         // Подгружает оффсеты объектов в памяти для текущей версии JVM.

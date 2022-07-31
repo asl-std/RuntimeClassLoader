@@ -57,13 +57,14 @@ final class ReflectionImpl extends Reflection {
     // caching it-self
     ReflectionImpl() { ReflectionImpl.root = this; }
 
-    static ReflectionImpl cached() {
+    static @Cached ReflectionImpl cached() {
         if (ReflectionImpl.root == null)
             return new ReflectionImpl();
         return ReflectionImpl.root;
     }
 
-    public static Unsafe lookup() { return getUnsafe(); }
+    @Override
+    public Unsafe lookup() { return getUnsafe(); }
 
     /**
      *
@@ -217,7 +218,7 @@ final class ReflectionImpl extends Reflection {
         Object tmp = getUnsafe().getObject(method, Offset.of(Method.class, "clazz") );
         // Вот здесь, честное слово, магия ебейшая, я сам не знаю почему это работает, но оставлю это так
         // P.S. Причём я понял, что это не должно работать, только спустя некоторое время после релиза этого метода
-        // P.S.#2 Пиздёж насчёт того, что вызов метода со всеми правами - иногда эта херня может дропнуть ошибку при вызове другого метода
+        // P.S. Если будет проверка по совместимости с модулем - мы пролетим как фанера над Парижем
         getUnsafe().putObject(method, Offset.of(Method.class, "clazz"), method.getDeclaringClass() );
         return method.invoke(o, args);
     }
@@ -329,11 +330,13 @@ final class ReflectionImpl extends Reflection {
         if (getRuntimeVersion() >= 16) {
             // Здесь происходит дичайшая магия сего интернет-пространства
             // Потому-что если мы попытается вызвать у класса, полученного через
-            // getInternalReflectionClass(), метод getModule(), то версия жабы #8
+            // getInternalReflectionClass(), метод getModule(), то версия Java SE 8
             // пошлёт нас далеко за горы и скажет, что такого метода нет.
             Class<?> internalClass = getInternalReflectionClass();
-            Object module = ReflectionImpl.lookup().getObject(internalClass, Offset.of(Class.class, "module") );
-            ReflectionImpl.lookup().putObject(ReflectionImpl.class, Offset.of(Class.class, "module"), module);
+            // Поэтому достаём модуль по вычисленному оффсету из памяти JVM
+            Object module = getUnsafe().getObject(internalClass, Offset.of(Class.class, "module") );
+            // Устанавливаем сами себе полученный модуль, тем самым делая подмену
+            getUnsafe().putObject(ReflectionImpl.class, Offset.of(Class.class, "module"), module);
         }
         // В общем, есть такое волшебное поле - override в классе
         // AccessibleObject и оно влияет на то, будет ли вызываться проверка
