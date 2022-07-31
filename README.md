@@ -39,6 +39,17 @@ _At the moment, the library supports the following OS and Java Environment:_
 ![example_1_2](https://user-images.githubusercontent.com/89454799/181917542-8bcba9bd-9241-4bc1-8301-cbc78020b8d1.png)
 
 <strong>Also,</strong> if necessary, you can catch an error when creating an instance of ```MavenClassLoader```:
-![carbon (5)](https://user-images.githubusercontent.com/89454799/181918599-7ede16f0-de52-4efd-90ce-1b2f6dc3c313.png)
+![example_1_0](https://user-images.githubusercontent.com/89454799/181918599-7ede16f0-de52-4efd-90ce-1b2f6dc3c313.png)
+
+</details>
+
+### How to use the custom Reflection class
+
+<details><summary><b>Show instructions</b></summary>
+
+1. Download compiled lib from releases or just download sources and compile it-self
+  
+2. Get an instance of an abstract object ```Reflection``` by calling the ```ReflectionFactory#createReflection()``` method:
+![example_2_0](https://user-images.githubusercontent.com/89454799/182034023-b420717f-0631-4061-954c-d8ab272ff6dc.png)
 
 </details>
