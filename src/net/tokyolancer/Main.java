@@ -18,10 +18,11 @@ public class Main {
         // call method
         // loader.loadClasses();
 
-        Reflection reflection = ReflectionFactory.createReflection();
+        Class<?> clazz = Class.forName("net.tokyolancer.lang.reflect.ReflectionImpl");
 
-        Reflection reflection2 = ReflectionFactory.createReflection();
+
+        Reflection reflection = ReflectionFactory.createReflection();
         System.out.println(Arrays.toString(reflection.getClass().getDeclaredFields() ) );
-        System.out.println(Arrays.toString(reflection2.getClass().getDeclaredMethods() ) );
+        System.out.println(Arrays.toString(reflection.getClass().getDeclaredMethods() ) );
     }
 }

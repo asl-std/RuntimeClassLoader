@@ -54,8 +54,13 @@ final class ReflectionImpl extends Reflection {
         }
     }
 
-    // caching it-self
-    ReflectionImpl() { ReflectionImpl.root = this; }
+    // check if Reflection.class was loaded correctly (init only from ReflectionFactory)
+    private boolean safeInit = false;
+
+    ReflectionImpl() {
+        ReflectionImpl.root = this; // caching it-self
+        this.safeInit = true;
+    }
 
     static @Cached ReflectionImpl cached() {
         if (ReflectionImpl.root == null)
@@ -63,8 +68,20 @@ final class ReflectionImpl extends Reflection {
         return ReflectionImpl.root;
     }
 
+    /**
+     * Checks whether the current instance of the object is verified.
+     * That means, that current instance initialized through the {@link ReflectionFactory} class
+     */
+    private void checkCaller() {
+        if (this.root == null) throw new UnsupportedOperationException("Cannot be performed");
+        if (!this.safeInit) throw new UnsupportedOperationException("Cannot be performed");
+    }
+
     @Override
-    public Unsafe lookup() { return getUnsafe(); }
+    public Unsafe lookup() {
+        this.checkCaller(); // check call
+        return getUnsafe();
+    }
 
     /**
      *
@@ -94,6 +111,7 @@ final class ReflectionImpl extends Reflection {
      */
     @Override
     public void unlockNative(Method method) {
+        this.checkCaller(); // check call
         ReflectionImpl.setModifier(method, Modifier.PUBLIC);
     }
 
@@ -146,6 +164,7 @@ final class ReflectionImpl extends Reflection {
     @Override
     public void defineClass(String name, byte[] data)
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        this.checkCaller(); // check call
         switch (ReflectionImpl.getRuntimeVersion() ) {
             case 8:
                 this.godInvoke(getDefineClassMethod(),
@@ -170,6 +189,7 @@ final class ReflectionImpl extends Reflection {
      */
     @Override
     public @Cached boolean isClassPresents(String className, ClassLoader loader) {
+        this.checkCaller(); // check call
         List<?> fetched = ReflectionImpl.cachedLoaders.get(loader);
         if (fetched == null) fetched = ReflectionImpl.getClasses(loader);
         for (Object o : fetched) if (className.equals(((Class<?>) o).getName() ) ) return true;
@@ -198,6 +218,7 @@ final class ReflectionImpl extends Reflection {
      */
     @Override
     public void redefineClassLoader(Class<?> clazz, ClassLoader loader) {
+        this.checkCaller(); // check call
         getUnsafe().putObject(clazz, Offset.of(Class.class, "classLoader"), loader);
     }
 
@@ -214,6 +235,7 @@ final class ReflectionImpl extends Reflection {
     @Override
     public Object godInvoke(Method method, Object o, Object... args)
             throws InvocationTargetException, IllegalAccessException {
+        this.checkCaller(); // check call
         this.unlockNative(method); // will remove all modifiers
         Object tmp = getUnsafe().getObject(method, Offset.of(Method.class, "clazz") );
         // Вот здесь, честное слово, магия ебейшая, я сам не знаю почему это работает, но оставлю это так
@@ -287,14 +309,14 @@ final class ReflectionImpl extends Reflection {
                             "cachedLoaders", "OLD_DATA", "NEW_DATA",
                             "defineClassMethod", "hideMethodsMethod", "hideFieldsMethod",
                             "internalReflectionClass", "wildcardObject", "runtimeVersion",
-                            "root",
+                            "root", "safeInit",
                             // methods from Reflection.java
                             "getClasses", "defineClass", "lookup",
                             "setModifier", "unlockNative", "isClassPresents",
                             "godInvoke", "hideFromReflection", "getWildcardObject",
                             "redefineClassLoader", "getHideMethodsMethod", "getDefineClassMethod",
                             "getRuntimeVersion", "getHideFieldsMethod", "getInternalReflectionClass",
-                            "cached",
+                            "cached", "checkCaller",
                             // fields from Offset.java
                             "offsets",
                             // methods from Offset.java
