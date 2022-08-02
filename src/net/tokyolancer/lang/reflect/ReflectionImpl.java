@@ -14,7 +14,7 @@ import static sun.misc.Unsafe.getUnsafe;
 
 // Не советую убирать данную вещь или она испортит тебе глаза (я предупредил)
 @SuppressWarnings("all")
-final class ReflectionImpl extends Reflection {
+final class ReflectionImpl implements Reflection {
 
     // Более быстрый способ для получения значений
     private static final Map<ClassLoader, List<?>> cachedLoaders = new HashMap<>();

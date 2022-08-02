@@ -1,11 +1,14 @@
 package net.tokyolancer.lang.network;
 
+import net.tokyolancer.lang.async.Vavilon;
 import net.tokyolancer.lang.network.MavenURL;
 import net.tokyolancer.lang.network.NetUtil;
 import net.tokyolancer.lang.reflect.ReflectionFactory;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
@@ -21,7 +24,7 @@ public final class MavenClassLoader {
     // Notifies that the list of loaded classes will be sorted
     private final boolean magicSort;
 
-    private Map<String, byte[]> allEntries = new HashMap<>();
+    private Map<String, byte[]> allEntries = new ConcurrentHashMap<>();
 
     private byte[] origin;
     private int lastProblemsAmount = -1;

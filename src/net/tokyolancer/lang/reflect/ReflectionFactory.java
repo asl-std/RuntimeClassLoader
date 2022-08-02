@@ -12,6 +12,6 @@ public final class ReflectionFactory {
     }
 
     private static void preInitializeImpl() {
-        try { Class.forName("net.tokyolancer.lang.reflect.ReflectionImpl"); } catch (Exception ignored) { }
+         try { Class.forName("net.tokyolancer.lang.reflect.ReflectionImpl"); } catch (Exception ignored) { }
     }
 }
