@@ -7,6 +7,9 @@ import java.net.URL;
 
 public final class MavenURL implements Serializable {
 
+    // Used only for debug
+    private static final boolean isDebugging = false;
+
     // "{repository}/{group_id}/{artifact_id}/{version}/{artifact_id}-{version}.jar"
     private static final String LINK_FORMAT = "%s/%s/%s/%s/%s-%s.jar";
 
@@ -25,7 +28,10 @@ public final class MavenURL implements Serializable {
     public byte[] download() throws IOException {
         long millis = System.currentTimeMillis();
         byte[] data = this.download0();
-        System.out.println("Downloaded in " + (System.currentTimeMillis() - millis) + " ms");
+
+        if (MavenURL.isDebugging)
+            System.out.println("Downloaded in " + (System.currentTimeMillis() - millis) + " ms");
+
         return data;
     }
 

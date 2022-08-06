@@ -25,11 +25,12 @@ public interface Reflection {
      *
      * @param name Correct class name
      * @param data Correct class byte data
+     * @return Class that successfully loaded
      * @throws NoSuchMethodException This error cannot be thrown, but it will have to be handled (because I am pussy)
      * @throws InvocationTargetException If the data or name is incorrect (check docs before using this method)
      * @throws IllegalAccessException This error cannot be thrown, but it will have to be handled (because I am pussy)
      */
-    void defineClass(String name, byte[] data)
+    Class<?> defineClass(String name, byte[] data)
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException;
 
     /**

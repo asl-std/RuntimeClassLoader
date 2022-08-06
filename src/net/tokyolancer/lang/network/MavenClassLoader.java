@@ -1,12 +1,11 @@
 package net.tokyolancer.lang.network;
 
-import net.tokyolancer.lang.async.Vavilon;
-import net.tokyolancer.lang.network.MavenURL;
-import net.tokyolancer.lang.network.NetUtil;
 import net.tokyolancer.lang.reflect.ReflectionFactory;
 
-import java.io.*;
-import java.lang.reflect.InvocationTargetException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
@@ -18,11 +17,16 @@ import java.util.stream.Collectors;
  */
 public final class MavenClassLoader {
 
+    // Used only for debug
+    private static final boolean isDebugging = false;
+
     // Confirms that the bytes were loaded correctly (the source of this data is the download link from the Maven repository)
     private final boolean isVerified;
 
     // Notifies that the list of loaded classes will be sorted
     private final boolean magicSort;
+
+    private final List<Class<?>> loadedClasses = new ArrayList<>();
 
     private Map<String, byte[]> allEntries = new ConcurrentHashMap<>();
 
@@ -52,7 +56,7 @@ public final class MavenClassLoader {
         this.magicSort = magicSort;
     }
 
-    public void loadClasses() throws IOException {
+    public List<Class<?>> loadClasses() throws IOException {
         this.preLoadClasses();
         this.loadClasses0();
 
@@ -60,6 +64,8 @@ public final class MavenClassLoader {
         // повторная загрузка классов из одного
         // и того же экземпляра объекта - невозможна.
         this.allEntries = null;
+
+        return this.loadedClasses;
     }
 
     private JarFile createJar() throws IOException {
@@ -150,9 +156,10 @@ public final class MavenClassLoader {
             if (!loadClass0(entry.getKey(), entry.getValue() ) ) ++problems;
         }
 
-        loaded += this.allEntries.size() - problems;
-
-        System.out.printf("Loaded %s / %s\n", loaded, this.allEntries.size() );
+        if (MavenClassLoader.isDebugging) {
+            loaded += this.allEntries.size() - problems;
+            System.out.printf("Loaded %s / %s\n", loaded, this.allEntries.size());
+        }
 
         // Если есть незагруженные классы и количество прошлых незагруженных
         // классов (из-за рекурсии) не равняется текущему количеству (в ином случае рекурсия будет бесконечной).
@@ -164,10 +171,14 @@ public final class MavenClassLoader {
 
     private boolean loadClass0(String name, byte[] data) {
         try {
-            ReflectionFactory.createReflection().defineClass(name, data);
-        } catch (Exception ignored) {
-            // ignored.printStackTrace();
-            // System.out.printf("Failed to load class: %s\n", name);
+            Class<?> clazz = ReflectionFactory.createReflection().defineClass(name, data);
+            // add to currently loaded class list
+            this.loadedClasses.add(clazz);
+        } catch (Exception e) {
+            if (MavenClassLoader.isDebugging) {
+                System.out.printf("Failed to load class: %s\n", name);
+                e.printStackTrace();
+            }
             return false;
         }
         return true;

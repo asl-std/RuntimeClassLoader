@@ -157,25 +157,24 @@ final class ReflectionImpl implements Reflection {
      *
      * @param name Correct class name
      * @param data Correct class byte data
+     * @return Class that successfully loaded
      * @throws NoSuchMethodException This error cannot be throwned, but it will have to be handled (because I am pussy)
      * @throws InvocationTargetException If the data or name is incorrect (check docs before using this method)
      * @throws IllegalAccessException This error cannot be throwned, but it will have to be handled (because I am pussy)
      */
     @Override
-    public void defineClass(String name, byte[] data)
+    public Class<?> defineClass(String name, byte[] data)
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         this.checkCaller(); // check call
         switch (ReflectionImpl.getRuntimeVersion() ) {
             case 8:
-                this.godInvoke(getDefineClassMethod(),
+                return (Class<?>) this.godInvoke(getDefineClassMethod(),
                         ClassLoader.getSystemClassLoader(), name, data, 0, data.length, null, null);
-                break;
             case 16:
             case 17:
             default:
-                this.godInvoke(getDefineClassMethod(), ClassLoader.getSystemClassLoader(),
+                return (Class<?>) this.godInvoke(getDefineClassMethod(), ClassLoader.getSystemClassLoader(),
                         ClassLoader.getSystemClassLoader(), name, data, 0, data.length, null, null);
-                break;
         }
     }
 
