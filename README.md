@@ -30,6 +30,25 @@ _At the moment, the library supports the following OS and Java Environment:_
 
 ## Usage![pin](https://user-images.githubusercontent.com/89454799/181916421-42971bd6-95b4-4c5f-91ab-04de306f1aa5.svg)
 
+
+### How to add it
+![dependency maven](https://img.shields.io/badge/DEPENDENCY-Maven-C71A36?style=plastic&logo=apachemaven)
+```xml
+<dependencies>
+    <dependency>
+        <groupId>ru.aslcraft</groupId>
+        <artifactId>runtimeclassloader</artifactId>
+        <version>1.0.0</version>
+    </dependency>
+</dependencies>
+```
+
+![dependency gradle](https://img.shields.io/badge/DEPENDENCY-Gradle-02303A?style=plastic&logo=gradle)
+```groovy
+implementation 'ru.aslcraft:runtimeclassloader:1.0.0'
+```
+
+
 ### How to load the Maven library in runtime
 
 <details><summary><b>Show instructions</b></summary>
