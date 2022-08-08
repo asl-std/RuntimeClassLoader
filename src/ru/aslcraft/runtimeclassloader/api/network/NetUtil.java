@@ -1,4 +1,4 @@
-package ru.aslcraft.api.dependency.loader.network;
+package ru.aslcraft.runtimeclassloader.api.network;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

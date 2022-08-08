@@ -2,11 +2,11 @@ package ru.aslcraft;
 
 import java.util.Arrays;
 
-import ru.aslcraft.api.dependency.loader.api.Reflection;
-import ru.aslcraft.api.dependency.loader.network.MavenClassLoader;
-import ru.aslcraft.api.dependency.loader.network.MavenRepository;
-import ru.aslcraft.api.dependency.loader.network.MavenURL;
-import ru.aslcraft.api.dependency.loader.reflect.ReflectionFactory;
+import ru.aslcraft.runtimeclassloader.api.api.Reflection;
+import ru.aslcraft.runtimeclassloader.api.network.MavenClassLoader;
+import ru.aslcraft.runtimeclassloader.api.network.MavenRepository;
+import ru.aslcraft.runtimeclassloader.api.network.MavenURL;
+import ru.aslcraft.runtimeclassloader.api.reflect.ReflectionFactory;
 
 public class Main {
 

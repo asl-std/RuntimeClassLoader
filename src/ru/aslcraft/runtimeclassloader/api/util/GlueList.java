@@ -1,4 +1,4 @@
-package ru.aslcraft.api.dependency.loader.util;
+package ru.aslcraft.runtimeclassloader.api.util;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.max;

@@ -1,6 +1,6 @@
-package ru.aslcraft.api.dependency.loader.reflect;
+package ru.aslcraft.runtimeclassloader.api.reflect;
 
-import ru.aslcraft.api.dependency.loader.util.MultiKeyMap;
+import ru.aslcraft.runtimeclassloader.api.util.MultiKeyMap;
 
 final class Offset {
 

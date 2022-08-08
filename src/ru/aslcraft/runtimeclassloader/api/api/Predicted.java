@@ -1,4 +1,4 @@
-package ru.aslcraft.api.dependency.loader.api;
+package ru.aslcraft.runtimeclassloader.api.api;
 
 /**
  *

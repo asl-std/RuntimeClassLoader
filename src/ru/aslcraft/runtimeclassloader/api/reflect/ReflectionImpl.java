@@ -1,4 +1,4 @@
-package ru.aslcraft.api.dependency.loader.reflect;
+package ru.aslcraft.runtimeclassloader.api.reflect;
 
 import sun.misc.Unsafe;
 
@@ -9,7 +9,7 @@ import java.lang.reflect.Modifier;
 import java.security.ProtectionDomain;
 import java.util.*;
 
-import ru.aslcraft.api.dependency.loader.api.Reflection;
+import ru.aslcraft.runtimeclassloader.api.api.Reflection;
 
 import static sun.misc.Unsafe.getUnsafe;
 

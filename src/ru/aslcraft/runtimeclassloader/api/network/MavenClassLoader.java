@@ -1,4 +1,4 @@
-package ru.aslcraft.api.dependency.loader.network;
+package ru.aslcraft.runtimeclassloader.api.network;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -10,7 +10,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 
-import ru.aslcraft.api.dependency.loader.reflect.ReflectionFactory;
+import ru.aslcraft.runtimeclassloader.api.reflect.ReflectionFactory;
 
 /**
  *

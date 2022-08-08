@@ -1,10 +1,10 @@
-package ru.aslcraft.api.dependency.loader.async;
+package ru.aslcraft.runtimeclassloader.api.async;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.aslcraft.api.dependency.loader.api.Awaited;
-import ru.aslcraft.api.dependency.loader.api.Predicted;
+import ru.aslcraft.runtimeclassloader.api.api.Awaited;
+import ru.aslcraft.runtimeclassloader.api.api.Predicted;
 
 final class AsyncWorker<R_TYPE> extends Thread implements Awaited<R_TYPE> {
 

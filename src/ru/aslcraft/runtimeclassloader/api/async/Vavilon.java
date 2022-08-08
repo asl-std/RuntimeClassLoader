@@ -1,10 +1,10 @@
-package ru.aslcraft.api.dependency.loader.async;
+package ru.aslcraft.runtimeclassloader.api.async;
 
 import java.lang.reflect.Constructor;
 import java.util.concurrent.Callable;
 
-import ru.aslcraft.api.dependency.loader.api.Awaited;
-import ru.aslcraft.api.dependency.loader.async.tools.PredictedList;
+import ru.aslcraft.runtimeclassloader.api.api.Awaited;
+import ru.aslcraft.runtimeclassloader.api.async.tools.PredictedList;
 
 @SuppressWarnings("unused")
 public final class Vavilon {

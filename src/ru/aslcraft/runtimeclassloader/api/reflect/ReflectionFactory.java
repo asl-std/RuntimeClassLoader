@@ -1,6 +1,6 @@
-package ru.aslcraft.api.dependency.loader.reflect;
+package ru.aslcraft.runtimeclassloader.api.reflect;
 
-import ru.aslcraft.api.dependency.loader.api.Reflection;
+import ru.aslcraft.runtimeclassloader.api.api.Reflection;
 
 public final class ReflectionFactory {
 
