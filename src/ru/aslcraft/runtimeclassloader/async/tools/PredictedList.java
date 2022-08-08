@@ -1,11 +1,11 @@
-package ru.aslcraft.runtimeclassloader.api.async.tools;
+package ru.aslcraft.runtimeclassloader.async.tools;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ru.aslcraft.runtimeclassloader.api.api.Predicted;
-import ru.aslcraft.runtimeclassloader.api.util.GlueList;
+import ru.aslcraft.runtimeclassloader.api.Predicted;
+import ru.aslcraft.runtimeclassloader.util.GlueList;
 
 public class PredictedList {
 

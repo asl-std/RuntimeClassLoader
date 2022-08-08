@@ -1,4 +1,4 @@
-package ru.aslcraft.runtimeclassloader.api.network;
+package ru.aslcraft.runtimeclassloader.network;
 
 /**
  * All data fetched from: https://mvnrepository.com/repos

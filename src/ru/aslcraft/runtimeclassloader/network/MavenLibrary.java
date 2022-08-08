@@ -1,4 +1,4 @@
-package ru.aslcraft.runtimeclassloader.api.network;
+package ru.aslcraft.runtimeclassloader.network;
 
 /**
  * Some needed libraries for plugins (like a MySQL or Oracle frameworks)

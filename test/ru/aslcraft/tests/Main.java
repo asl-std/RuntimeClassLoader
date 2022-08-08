@@ -1,12 +1,12 @@
-package ru.aslcraft;
+package ru.aslcraft.tests;
 
 import java.util.Arrays;
 
-import ru.aslcraft.runtimeclassloader.api.api.Reflection;
-import ru.aslcraft.runtimeclassloader.api.network.MavenClassLoader;
-import ru.aslcraft.runtimeclassloader.api.network.MavenRepository;
-import ru.aslcraft.runtimeclassloader.api.network.MavenURL;
-import ru.aslcraft.runtimeclassloader.api.reflect.ReflectionFactory;
+import ru.aslcraft.runtimeclassloader.api.Reflection;
+import ru.aslcraft.runtimeclassloader.network.MavenClassLoader;
+import ru.aslcraft.runtimeclassloader.network.MavenRepository;
+import ru.aslcraft.runtimeclassloader.network.MavenURL;
+import ru.aslcraft.runtimeclassloader.reflect.ReflectionFactory;
 
 public class Main {
 

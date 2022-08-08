@@ -1,4 +1,4 @@
-package ru.aslcraft.runtimeclassloader.api.reflect;
+package ru.aslcraft.runtimeclassloader.reflect;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

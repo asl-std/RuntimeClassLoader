@@ -1,4 +1,4 @@
-package ru.aslcraft.runtimeclassloader.api.network;
+package ru.aslcraft.runtimeclassloader.network;
 
 import java.io.IOException;
 import java.io.Serializable;

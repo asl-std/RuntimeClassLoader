@@ -1,4 +1,4 @@
-package ru.aslcraft.runtimeclassloader.api.api;
+package ru.aslcraft.runtimeclassloader.api;
 
 @Deprecated
 public interface AwaitChain<R_TYPE> { }

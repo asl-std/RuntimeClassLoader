@@ -1,4 +1,4 @@
-package ru.aslcraft.runtimeclassloader.api.util;
+package ru.aslcraft.runtimeclassloader.util;
 
 import java.util.HashMap;
 import java.util.Map;
