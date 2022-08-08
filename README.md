@@ -21,6 +21,12 @@ _At the moment, the library supports the following OS and Java Environment:_
 </table>
 
 
+[![GitHub license](https://img.shields.io/github/license/asl-std/RuntimeClassLoader?style=plastic)](https://github.com/asl-std/OAuth2Discord/blob/release/LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/asl-std/RuntimeClassLoader?style=plastic)](https://github.com/asl-std/OAuth2Discord/issues)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/asl-std/RuntimeClassLoader/Build?style=plastic)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/asl-std/RuntimeClassLoader/Maven%20Central%20deploy?style=plastic)
+![Maven Central](https://img.shields.io/maven-central/v/ru.aslcraft.runtimeclassloader?style=plastic)
+
 ## Usage![pin](https://user-images.githubusercontent.com/89454799/181916421-42971bd6-95b4-4c5f-91ab-04de306f1aa5.svg)
 
 ### How to load the Maven library in runtime
