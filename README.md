@@ -25,7 +25,8 @@ _At the moment, the library supports the following OS and Java Environment:_
 [![GitHub issues](https://img.shields.io/github/issues/asl-std/RuntimeClassLoader?style=plastic)](https://github.com/asl-std/RuntimeClassLoader/issues)
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/asl-std/RuntimeClassLoader/Build?style=plastic)
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/asl-std/RuntimeClassLoader/Maven%20Central%20deploy?style=plastic)
-![Maven Central](https://img.shields.io/maven-central/v/ru.aslcraft.runtimeclassloader?style=plastic)
+![Maven Central](https://img.shields.io/maven-central/v/ru.aslcraft/runtimeclassloader?style=plastic)
+
 
 ## Usage![pin](https://user-images.githubusercontent.com/89454799/181916421-42971bd6-95b4-4c5f-91ab-04de306f1aa5.svg)
 
