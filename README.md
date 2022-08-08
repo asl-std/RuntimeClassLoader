@@ -21,8 +21,8 @@ _At the moment, the library supports the following OS and Java Environment:_
 </table>
 
 
-[![GitHub license](https://img.shields.io/github/license/asl-std/RuntimeClassLoader?style=plastic)](https://github.com/asl-std/OAuth2Discord/blob/release/LICENSE)
-[![GitHub issues](https://img.shields.io/github/issues/asl-std/RuntimeClassLoader?style=plastic)](https://github.com/asl-std/OAuth2Discord/issues)
+[![GitHub license](https://img.shields.io/github/license/asl-std/RuntimeClassLoader?style=plastic)](https://github.com/asl-std/RuntimeClassLoader/blob/release/LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/asl-std/RuntimeClassLoader?style=plastic)](https://github.com/asl-std/RuntimeClassLoader/issues)
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/asl-std/RuntimeClassLoader/Build?style=plastic)
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/asl-std/RuntimeClassLoader/Maven%20Central%20deploy?style=plastic)
 ![Maven Central](https://img.shields.io/maven-central/v/ru.aslcraft.runtimeclassloader?style=plastic)
