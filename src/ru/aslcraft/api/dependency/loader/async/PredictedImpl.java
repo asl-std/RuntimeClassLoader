@@ -1,12 +1,12 @@
-package net.tokyolancer.lang.async;
+package ru.aslcraft.api.dependency.loader.async;
 
-import net.tokyolancer.lang.api.Predicted;
+import static ru.aslcraft.api.dependency.loader.async.Vavilon.Gates.*;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static net.tokyolancer.lang.async.Vavilon.Gates.*;
+import ru.aslcraft.api.dependency.loader.api.Predicted;
 
 final class PredictedImpl<R_TYPE> implements Predicted<R_TYPE> {
 

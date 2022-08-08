@@ -1,10 +1,10 @@
-package net.tokyolancer.lang.async;
-
-import net.tokyolancer.lang.api.Awaited;
-import net.tokyolancer.lang.api.Predicted;
+package ru.aslcraft.api.dependency.loader.async;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import ru.aslcraft.api.dependency.loader.api.Awaited;
+import ru.aslcraft.api.dependency.loader.api.Predicted;
 
 final class AsyncWorker<R_TYPE> extends Thread implements Awaited<R_TYPE> {
 

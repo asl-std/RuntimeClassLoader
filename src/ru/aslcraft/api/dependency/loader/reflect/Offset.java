@@ -1,6 +1,6 @@
-package net.tokyolancer.lang.reflect;
+package ru.aslcraft.api.dependency.loader.reflect;
 
-import net.tokyolancer.lang.util.MultiKeyMap;
+import ru.aslcraft.api.dependency.loader.util.MultiKeyMap;
 
 final class Offset {
 

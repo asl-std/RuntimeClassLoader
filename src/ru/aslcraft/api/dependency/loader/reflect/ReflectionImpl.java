@@ -1,6 +1,5 @@
-package net.tokyolancer.lang.reflect;
+package ru.aslcraft.api.dependency.loader.reflect;
 
-import net.tokyolancer.lang.api.Reflection;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
@@ -9,6 +8,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.security.ProtectionDomain;
 import java.util.*;
+
+import ru.aslcraft.api.dependency.loader.api.Reflection;
 
 import static sun.misc.Unsafe.getUnsafe;
 

@@ -1,4 +1,4 @@
-package net.tokyolancer.lang.reflect;
+package ru.aslcraft.api.dependency.loader.reflect;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

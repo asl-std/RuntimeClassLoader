@@ -1,6 +1,4 @@
-package net.tokyolancer.lang.network;
-
-import net.tokyolancer.lang.reflect.ReflectionFactory;
+package ru.aslcraft.api.dependency.loader.network;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -11,6 +9,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
+
+import ru.aslcraft.api.dependency.loader.reflect.ReflectionFactory;
 
 /**
  *

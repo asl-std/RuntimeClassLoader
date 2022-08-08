@@ -1,4 +1,4 @@
-package net.tokyolancer.lang.network;
+package ru.aslcraft.api.dependency.loader.network;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

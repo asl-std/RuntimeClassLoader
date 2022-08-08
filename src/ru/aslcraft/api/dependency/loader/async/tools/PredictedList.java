@@ -1,11 +1,11 @@
-package net.tokyolancer.lang.async.tools;
-
-import net.tokyolancer.lang.api.Predicted;
-import net.tokyolancer.lang.util.GlueList;
+package ru.aslcraft.api.dependency.loader.async.tools;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import ru.aslcraft.api.dependency.loader.api.Predicted;
+import ru.aslcraft.api.dependency.loader.util.GlueList;
 
 public class PredictedList {
 
