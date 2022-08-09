@@ -25,10 +25,28 @@ _At the moment, the library supports the following OS and Java Environment:_
 [![GitHub issues](https://img.shields.io/github/issues/asl-std/RuntimeClassLoader?style=plastic)](https://github.com/asl-std/RuntimeClassLoader/issues)
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/asl-std/RuntimeClassLoader/Build?style=plastic)
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/asl-std/RuntimeClassLoader/Maven%20Central%20deploy?style=plastic)
-![Maven Central](https://img.shields.io/maven-central/v/ru.aslcraft/runtimeclassloader?style=plastic)
-
+[![Maven Central](https://img.shields.io/maven-central/v/ru.aslcraft/runtimeclassloader.svg?label=Maven%20Central&style=plastic)](https://search.maven.org/search?q=g:%22ru.aslcraft%22%20AND%20a:%22runtimeclassloader%22)
 
 ## Usage![pin](https://user-images.githubusercontent.com/89454799/181916421-42971bd6-95b4-4c5f-91ab-04de306f1aa5.svg)
+
+
+### How to add it
+![dependency maven](https://img.shields.io/badge/DEPENDENCY-Maven-C71A36?style=plastic&logo=apachemaven)
+```xml
+<dependencies>
+    <dependency>
+        <groupId>ru.aslcraft</groupId>
+        <artifactId>runtimeclassloader</artifactId>
+        <version>1.0.0</version>
+    </dependency>
+</dependencies>
+```
+
+![dependency gradle](https://img.shields.io/badge/DEPENDENCY-Gradle-02303A?style=plastic&logo=gradle)
+```groovy
+implementation 'ru.aslcraft:runtimeclassloader:1.0.0'
+```
+
 
 ### How to load the Maven library in runtime
 

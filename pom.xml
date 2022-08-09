@@ -6,7 +6,7 @@
 
 	<groupId>ru.aslcraft</groupId>
 	<artifactId>runtimeclassloader</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<name>Runtime Class Loader</name>
 	<description>RuntimeClassLoader is a useful utility library for interacting with an inaccessible environment in Java</description>
 	<url>https://github.com/asl-std/RuntimeClassLoader</url>
