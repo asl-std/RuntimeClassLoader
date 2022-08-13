@@ -1,44 +1,56 @@
 package ru.aslcraft.runtimeclassloader.network;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
+
 /**
  * Some needed libraries for plugins (like a MySQL or Oracle frameworks)
  */
-public enum MavenLibrary {
+public class MavenLibrary extends Dependency {
 
-	HTTPCLIENT(MavenRepository.Central, "org.apache.httpcomponents", "httpclient", "4.5.13"),
-	SQLITE_JDBC(MavenRepository.Central, "org.xerial", "sqlite-jdbc", "3.39.2.1-SNAPSHOT"),
-	MYSQL_CONNECTOR(MavenRepository.Central, "mysql", "mysql-connector-java", "8.0.30"),
-	GSON(MavenRepository.Central, "com.google.code.gson", "gson", "2.9.0"),
-	HIKARICP(MavenRepository.Central, "com.zaxxer", "HikariCP", "4.0.3"),
-	JDA(MavenRepository.Central, "net.dv8tion", "JDA", "5.0.0-alpha.17"),
-	ORG_JSON(MavenRepository.Central, "org.json", "json", "20220320"),
-	ASM(MavenRepository.Central, "org.ow2.asm", "asm", "9.3");
+	public static MavenLibrary
+	HTTPCLIENT 		= new MavenLibrary(MavenRepository.Central, "org.apache.httpcomponents", "httpclient", "4.5.13"),
+	SQLITE_JDBC 	= new MavenLibrary(MavenRepository.Central, "org.xerial", "sqlite-jdbc", "3.39.2.0"),
+	MYSQL_CONNECTOR = new MavenLibrary(MavenRepository.Central, "mysql", "mysql-connector-java", "8.0.30") {
 
-	private final MavenRepository repository;
-	private final String groupId;
-	private final String artifactId;
-	private final String version;
+		@Override
+		protected void collectDependencies() {
+			dependencies.add(new Dependency(MavenRepository.Central, "com.google.protobuf", "protobuf-java", "3.19.4"));
+			dependencies.add(new Dependency(MavenRepository.Central, "com.oracle.oci.sdk", "oci-java-sdk-common", "2.14.1"));
+		}
+
+	},
+	GSON 			= new MavenLibrary(MavenRepository.Central, "com.google.code.gson", "gson", "2.9.0"),
+	HIKARICP 		= new MavenLibrary(MavenRepository.Central, "com.zaxxer", "HikariCP", "4.0.3"),
+	JDA 			= new MavenLibrary(MavenRepository.Central, "net.dv8tion", "JDA", "5.0.0-alpha.17") {
+
+		@Override
+		protected void collectDependencies() {
+			dependencies.add(new Dependency(MavenRepository.Central, "com.fasterxml.jackson.core", "jackson-core", "2.13.2"));
+			dependencies.add(new Dependency(MavenRepository.Central, "com.fasterxml.jackson.core", "jackson-databind", "2.13.2.2"));
+			dependencies.add(new Dependency(MavenRepository.Central, "net.sf.trove4j", "trove4j", "3.0.3"));
+			dependencies.add(new Dependency(MavenRepository.Central, "", "", ""));
+		}
+
+	},
+	ORG_JSON 		= new MavenLibrary(MavenRepository.Central, "org.json", "json", "20220320"),
+	ASM 			= new MavenLibrary(MavenRepository.Central, "org.ow2.asm", "asm", "9.3");
+
+
+	protected List<Dependency> dependencies = new ArrayList<>();
 
 	MavenLibrary(MavenRepository repository, String groupId, String artifactId, String version) {
-		this.repository = repository;
-		this.groupId = groupId;
-		this.artifactId = artifactId;
-		this.version = version;
+		super(repository, groupId, artifactId, version);
+
+		collectDependencies();
 	}
 
-	public MavenRepository repository() {
-		return repository;
+	protected void collectDependencies() {}
+
+	public ImmutableList<Dependency> getDependencies() {
+		return ImmutableList.copyOf(dependencies);
 	}
 
-	public String groupId() {
-		return groupId;
-	}
-
-	public String artifactId() {
-		return artifactId;
-	}
-
-	public String version() {
-		return version;
-	}
 }

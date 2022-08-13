@@ -49,7 +49,7 @@ public final class MavenURL implements Serializable {
 		return new URL(baseURL);
 	}
 
-	public static MavenURL fromMavenLibrary(MavenLibrary library) {
-		return new MavenURL(library.repository(), library.groupId(), library.artifactId(), library.version() );
+	public static MavenURL fromDependency(Dependency dependency) {
+		return new MavenURL(dependency.repository(), dependency.groupId(), dependency.artifactId(), dependency.version() );
 	}
 }
