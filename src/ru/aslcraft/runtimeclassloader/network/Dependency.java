@@ -7,7 +7,11 @@ public class Dependency {
 	private final String artifactId;
 	private final String version;
 
-	Dependency(MavenRepository repository, String groupId, String artifactId, String version) {
+	public Dependency(String groupId, String artifactId, String version) {
+		this(MavenRepository.Central, groupId,artifactId,version);
+	}
+
+	public Dependency(MavenRepository repository, String groupId, String artifactId, String version) {
 		this.repository = repository;
 		this.groupId = groupId;
 		this.artifactId = artifactId;
