@@ -13,25 +13,6 @@ import java.util.zip.ZipFile;
 
 public class FileUtil {
 
-    @SuppressWarnings("unchecked")
-    public static List<? extends JarEntry> filterEntries(JarFile file, BiFunction<ZipFile, ZipEntry, Boolean> biFunction) {
-        return (List<? extends JarEntry>) FileUtil.filterEntries((ZipFile) file, biFunction);
-    }
-
-    // testing
-    public static List<? extends ZipEntry> filterEntries(ZipFile file, BiFunction<ZipFile, ZipEntry, Boolean> biFunction) {
-        List<ZipEntry> result = new LinkedList<>();
-        Enumeration<? extends ZipEntry> entries = file.entries();
-
-        while (entries.hasMoreElements() ) {
-            ZipEntry entry = entries.nextElement();
-            if (biFunction.apply(file, entry) )
-                result.add(entry);
-        }
-
-        return result;
-    }
-
     public static void performOnEntries(JarFile file, BiConsumer<ZipFile, ZipEntry> biConsumer) {
         FileUtil.performOnEntries((ZipFile) file, biConsumer);
     }
