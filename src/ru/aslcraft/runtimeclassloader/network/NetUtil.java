@@ -3,6 +3,8 @@ package ru.aslcraft.runtimeclassloader.network;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLConnection;
+import java.nio.ByteBuffer;
 
 public final class NetUtil {
 
@@ -41,5 +43,14 @@ public final class NetUtil {
         outStream.close();
         inputStream.close();
         return outStream.toByteArray();
+    }
+
+    public static byte[] toByteArray(URLConnection connection) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(connection.getContentLength() );
+        InputStream inStream = connection.getInputStream();
+        int nRead;
+        while ((nRead = inStream.read() ) != -1)
+            buffer.put((byte) nRead);
+        return buffer.array();
     }
 }

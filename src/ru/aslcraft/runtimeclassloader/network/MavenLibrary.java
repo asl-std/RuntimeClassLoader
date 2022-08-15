@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * Some needed libraries for plugins (like a MySQL or Oracle frameworks)
  */
+@SuppressWarnings("unused")
 public class MavenLibrary extends Dependency {
 
 	public static MavenLibrary

@@ -34,4 +34,13 @@ public class Dependency {
 		return version;
 	}
 
+	@Override
+	public String toString() {
+		return "Dependency{" +
+				"repository=" + repository +
+				", groupId='" + groupId + '\'' +
+				", artifactId='" + artifactId + '\'' +
+				", version='" + version + '\'' +
+				'}';
+	}
 }

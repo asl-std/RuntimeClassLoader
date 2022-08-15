@@ -1,7 +1,9 @@
 package ru.aslcraft.tests;
 
+import ru.aslcraft.runtimeclassloader.network.CustomClassLoader;
 import ru.aslcraft.runtimeclassloader.network.MavenClassLoader;
 import ru.aslcraft.runtimeclassloader.network.MavenLibrary;
+import ru.aslcraft.runtimeclassloader.network.MavenURL;
 
 public class Main {
 
@@ -14,15 +16,19 @@ public class Main {
 			System.out.println(loader.loadClasses());
 		}*/
 
+
+
 		final MavenLibrary lib = MavenLibrary.MYSQL_CONNECTOR;
 
-		System.out.println(lib.getDependencies().size());
-
-		final MavenClassLoader loader = new MavenClassLoader(lib);
-
-		System.out.println("Successfully loaded " + lib.groupId() + "." + lib.artifactId());
-
-		System.out.println(loader.loadClasses());
+		new CustomClassLoader(lib).resolveDependencies();
+//
+//		System.out.println(lib.getDependencies().size() );
+//
+//		final MavenClassLoader loader = new MavenClassLoader(lib);
+//
+//		System.out.println("Successfully loaded " + lib.groupId() + "." + lib.artifactId());
+//
+//		System.out.println(loader.loadClasses());
 
 		/*final Reflection reflection = ReflectionFactory.createReflection();
 		System.out.println(Arrays.toString(reflection.getClass().getDeclaredFields()));

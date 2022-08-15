@@ -3,6 +3,7 @@ package ru.aslcraft.runtimeclassloader.network;
 /**
  * All data fetched from: https://mvnrepository.com/repos
  */
+@SuppressWarnings("unused")
 public enum MavenRepository {
 
 	Central("https://repo1.maven.org/maven2"),
