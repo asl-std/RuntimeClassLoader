@@ -1,5 +1,7 @@
 package ru.aslcraft.runtimeclassloader.network;
 
+import ru.aslcraft.runtimeclassloader.util.NetUtil;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;

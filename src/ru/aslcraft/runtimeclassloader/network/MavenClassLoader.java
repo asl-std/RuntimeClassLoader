@@ -3,6 +3,7 @@ package ru.aslcraft.runtimeclassloader.network;
 import com.google.common.collect.ImmutableList;
 import ru.aslcraft.runtimeclassloader.reflect.ReflectionFactory;
 import ru.aslcraft.runtimeclassloader.util.FileUtil;
+import ru.aslcraft.runtimeclassloader.util.NetUtil;
 
 import java.io.IOException;
 import java.io.InputStream;

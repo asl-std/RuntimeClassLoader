@@ -1,6 +1,7 @@
 package ru.aslcraft.runtimeclassloader.network;
 
 import ru.aslcraft.runtimeclassloader.util.FileUtil;
+import ru.aslcraft.runtimeclassloader.util.NetUtil;
 
 import java.io.File;
 import java.io.IOException;
