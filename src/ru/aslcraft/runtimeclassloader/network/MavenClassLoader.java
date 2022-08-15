@@ -1,24 +1,18 @@
 package ru.aslcraft.runtimeclassloader.network;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import com.google.common.collect.ImmutableList;
+import ru.aslcraft.runtimeclassloader.reflect.ReflectionFactory;
+import ru.aslcraft.runtimeclassloader.util.FileUtil;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
-
-import com.google.common.collect.ImmutableList;
-
-import ru.aslcraft.runtimeclassloader.reflect.ReflectionFactory;
-import ru.aslcraft.runtimeclassloader.util.FileUtil;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  *
@@ -93,19 +87,23 @@ public final class MavenClassLoader {
 	private void preLoadClasses() throws IOException {
 		JarFile file = FileUtil.toJarFile(this.origin);
 
-		Enumeration<JarEntry> entries = file.entries();
+		FileUtil.performOnEntries(file, this::loadEntry);
 
-		while (entries.hasMoreElements() ) {
-			this.loadEntry0(file, entries.nextElement() );
-		}
 		// Не забываем закрыть считывание файла
 		file.close();
+
 		if (magicSorting) {
 			// Сортируем список по ключу (название класса) в зависимости с алфавитом.
 			// На практике позволяет подгружать сразу намного больше классов, чем ежели без этого.
 			allEntries = allEntries.entrySet().stream().sorted(Map.Entry.comparingByKey() )
 					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (k, v) -> k, LinkedHashMap::new) );
 		}
+	}
+
+	private void loadEntry(ZipFile file, ZipEntry entry) {
+		try {
+			this.loadEntry0((JarFile) file, (JarEntry) entry);
+		} catch (IOException ignored) { }
 	}
 
 	private void loadEntry0(JarFile file, JarEntry entry) throws IOException {

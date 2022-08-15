@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -29,6 +30,17 @@ public class FileUtil {
         }
 
         return result;
+    }
+
+    public static void performOnEntries(JarFile file, BiConsumer<ZipFile, ZipEntry> biConsumer) {
+        FileUtil.performOnEntries((ZipFile) file, biConsumer);
+    }
+
+    public static void performOnEntries(ZipFile file, BiConsumer<ZipFile, ZipEntry> biConsumer) {
+        Enumeration<? extends ZipEntry> entries = file.entries();
+
+        while (entries.hasMoreElements() )
+            biConsumer.accept(file, entries.nextElement() );
     }
 
     public static JarFile toJarFile(byte[] data) throws IOException {
