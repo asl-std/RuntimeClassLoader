@@ -1,5 +1,7 @@
-package ru.aslcraft.runtimeclassloader.network;
+package ru.aslcraft.runtimeclassloader.loader;
 
+import ru.aslcraft.runtimeclassloader.network.Dependency;
+import ru.aslcraft.runtimeclassloader.network.MavenPom;
 import ru.aslcraft.runtimeclassloader.util.XMLReader;
 
 import java.io.IOException;
@@ -8,12 +10,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class CustomClassLoader {
+public class MavenLibClassLoader {
 
     private final Set<Dependency> dependencies = new HashSet<>();
     private final Dependency dependency;
 
-    public CustomClassLoader(Dependency dependency) throws IOException {
+    public MavenLibClassLoader(Dependency dependency) throws IOException {
         this.dependency = dependency;
     }
 

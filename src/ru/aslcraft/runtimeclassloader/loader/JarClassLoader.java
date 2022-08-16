@@ -1,6 +1,5 @@
-package ru.aslcraft.runtimeclassloader.network;
+package ru.aslcraft.runtimeclassloader.loader;
 
-import com.google.common.collect.ImmutableList;
 import ru.aslcraft.runtimeclassloader.reflect.ReflectionFactory;
 import ru.aslcraft.runtimeclassloader.util.FileUtil;
 import ru.aslcraft.runtimeclassloader.util.NetUtil;
@@ -29,36 +28,6 @@ public final class JarClassLoader {
 
 	private final JarFile jar;
 
-	// For removal
-	@Deprecated
-	public JarClassLoader(MavenLibrary lib) throws IOException {
-		this(MavenURL.fromDependency(lib));
-
-		ImmutableList<Dependency> dependencies = lib.getDependencies();
-
-		if (dependencies.size() == 0) return;
-
-		dependencies.forEach(dependency -> {
-			try {
-				if (isDebugging)
-					System.out.println("Loading dependency " + dependency.groupId() + "." + dependency.artifactId());
-
-				new JarClassLoader(MavenURL.fromDependency(dependency)).loadClasses();
-			} catch (IOException e) {
-				if (isDebugging)
-					System.out.println("Could't load dependency "
-							+ dependency.groupId() + "." + dependency.artifactId()
-							+ " for library " + lib.groupId() + "." + lib.artifactId());
-			}
-		});
-	}
-
-	// For removal
-	@Deprecated
-	public JarClassLoader(MavenURL url) throws IOException {
-		this(url.download() );
-	}
-
 	/**
 	 *
 	 * Constructor is deprecated due to unsafe initializing of .jar file.
@@ -75,6 +44,14 @@ public final class JarClassLoader {
 		this.jar = jar;
 	}
 
+	/**
+	 *
+	 * Will load all parsed classes into system classloader from provided .jar file (or provided byte data that
+	 * will be converted to .jar file, see constructor {@link JarClassLoader#JarClassLoader(byte[])}, but it's not unsafe)
+	 *
+	 * @return List of loaded classes
+	 * @throws IOException If some of IO operations went wrong
+	 */
 	public List<Class<?>> loadClasses() throws IOException {
 		this.preLoadClasses();
 		this.loadClasses0();
@@ -152,7 +129,7 @@ public final class JarClassLoader {
 
 		if (JarClassLoader.isDebugging) {
 			loaded += allEntries.size() - problems;
-			System.out.printf("Loaded: %s / Not loaded: %s\n", loaded, allEntries.size() );
+			System.out.printf("Currently classes loaded: %s\n", loaded);
 		}
 
 		// Рекурсивно подгружаем оставшиеся классы, если они не загрузились по какой-то из причин
@@ -170,8 +147,8 @@ public final class JarClassLoader {
 			loadedClasses.add(clazz = ReflectionFactory.createReflection().defineClass(name, data) );
 		} catch (Exception e) {
 			if (JarClassLoader.isDebugging) {
-				System.out.printf("Failed to load class: %s\n", name);
-				e.printStackTrace();
+//				System.out.printf("Failed to load class: %s\n", name);
+//				e.printStackTrace();
 			}
 		}
 

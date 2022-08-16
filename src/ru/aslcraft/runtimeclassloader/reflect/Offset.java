@@ -1,6 +1,7 @@
 package ru.aslcraft.runtimeclassloader.reflect;
 
 import ru.aslcraft.runtimeclassloader.util.MultiKeyMap;
+import ru.aslcraft.runtimeclassloader.util.RuntimeUtil;
 
 final class Offset {
 
@@ -15,7 +16,7 @@ final class Offset {
     static {
         // Подгружает оффсеты объектов в памяти для текущей версии JVM.
         // Поддерживает только Java 8, 16, 17
-        switch (ReflectionImpl.getRuntimeVersion() ) {
+        switch (RuntimeUtil.getRuntimeVersion() ) {
             case 8:
                 offsets.put("java.lang.reflect.Method","modifiers", 36L);
                 offsets.put("java.lang.reflect.Method", "clazz", 40L);

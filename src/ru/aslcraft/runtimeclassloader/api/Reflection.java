@@ -1,13 +1,9 @@
 package ru.aslcraft.runtimeclassloader.api;
 
-import sun.misc.Unsafe;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public interface Reflection {
-
-    Unsafe lookup();
 
     /**
      *

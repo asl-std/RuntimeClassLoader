@@ -1,27 +1,26 @@
 package ru.aslcraft.runtimeclassloader.reflect;
 
-import sun.misc.Unsafe;
+import ru.aslcraft.runtimeclassloader.api.Reflection;
+import ru.aslcraft.runtimeclassloader.unsafe.UnsafeFactory;
+import ru.aslcraft.runtimeclassloader.unsafe.UnsafeImpl;
+import ru.aslcraft.runtimeclassloader.util.RuntimeUtil;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.security.ProtectionDomain;
 import java.util.*;
 
-import ru.aslcraft.runtimeclassloader.api.Reflection;
-
-import static sun.misc.Unsafe.getUnsafe;
-
 // Не советую убирать данную вещь или она испортит тебе глаза (я предупредил)
 @SuppressWarnings("all")
 final class ReflectionImpl implements Reflection {
 
-    // Более быстрый способ для получения значений
+    // used for cache
     private static final Map<ClassLoader, List<?>> cachedLoaders = new HashMap<>();
 
-    // Так называемые 'var-args' которые необходимы для определения метода инициализации класса из байтов
+    // used for cache
     private static final Class<?>[] OLD_DATA = new Class<?>[] { String.class, byte[].class, int.class, int.class, ProtectionDomain.class, String.class };
+    // used for cache
     private static final Class<?>[] NEW_DATA = new Class<?>[] { ClassLoader.class, String.class, byte[].class, int.class, int.class, ProtectionDomain.class, String.class };
 
     // used for cache
@@ -34,22 +33,16 @@ final class ReflectionImpl implements Reflection {
     private static Class<?> internalReflectionClass;
     // used for cache
     private static Object wildcardObject;
-    // used for cache
-    private static int runtimeVersion = -1;
 
     // must be defined by constructor
     private static ReflectionImpl root = null;
 
     static {
         try {
-            Field field = Unsafe.class.getDeclaredField("theUnsafe");
-            field.setAccessible(true);
-            // Now unsafe can be accessed directly by method getUnsafe();
-            ((Unsafe) field.get(null) ).
-                    putObject(ReflectionImpl.class, Offset.of(Class.class, "classLoader"), null);
             // Hiding classes from Java Reflection API
             ReflectionImpl.hideFromReflection(ReflectionImpl.class);
             ReflectionImpl.hideFromReflection(Offset.class);
+            ReflectionImpl.hideFromReflection(UnsafeImpl.class);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -63,7 +56,7 @@ final class ReflectionImpl implements Reflection {
         this.safeInit = true;
     }
 
-    static @Cached ReflectionImpl cached() {
+    static ReflectionImpl cached() {
         if (ReflectionImpl.root == null)
             return new ReflectionImpl();
         return ReflectionImpl.root;
@@ -76,31 +69,6 @@ final class ReflectionImpl implements Reflection {
     private void checkCaller() {
         if (this.root == null) throw new UnsupportedOperationException("Cannot be performed");
         if (!this.safeInit) throw new UnsupportedOperationException("Cannot be performed");
-    }
-
-    @Override
-    public Unsafe lookup() {
-        this.checkCaller(); // check call
-        return getUnsafe();
-    }
-
-    /**
-     *
-     * Retrieves the current version of the JVM.
-     *
-     * @return Runtime version in parsed view (8 - JAVA 1.8, 16 - JAVA 16 and etc.)
-     */
-    static @Cached int getRuntimeVersion() {
-        if (ReflectionImpl.runtimeVersion == -1) {
-            String version = System.getProperty("java.version");
-            if (version.startsWith("1.") ) version = version.substring(2, 3);
-            else {
-                int dot = version.indexOf(".");
-                if (dot != -1) version = version.substring(0, dot);
-            }
-            ReflectionImpl.runtimeVersion = Integer.parseInt(version);
-        }
-        return ReflectionImpl.runtimeVersion;
     }
 
     /**
@@ -124,7 +92,7 @@ final class ReflectionImpl implements Reflection {
      * @param mod The modifier to set
      */
     private static void setModifier(Method method, int mod) {
-        getUnsafe().putInt(method, Offset.of(Method.class, "modifiers"), mod);
+        UnsafeFactory.createUnsafe().putInt(method, Offset.of(Method.class, "modifiers"), mod);
     }
 
     /**
@@ -135,9 +103,9 @@ final class ReflectionImpl implements Reflection {
      * @return Needed method
      * @throws NoSuchMethodException This error cannot be throwned, but it will have to be handled (because I am pussy)
      */
-    private static @Cached Method getDefineClassMethod() throws NoSuchMethodException {
+    private static Method getDefineClassMethod() throws NoSuchMethodException {
         if (ReflectionImpl.defineClassMethod == null) {
-            switch (ReflectionImpl.getRuntimeVersion() ) {
+            switch (RuntimeUtil.getRuntimeVersion() ) {
                 case 8:
                     ReflectionImpl.defineClassMethod = ClassLoader.class.getDeclaredMethod("defineClass1", ReflectionImpl.OLD_DATA);
                     break;
@@ -167,7 +135,7 @@ final class ReflectionImpl implements Reflection {
     public Class<?> defineClass(String name, byte[] data)
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         this.checkCaller(); // check call
-        switch (ReflectionImpl.getRuntimeVersion() ) {
+        switch (RuntimeUtil.getRuntimeVersion() ) {
             case 8:
                 return (Class<?>) this.godInvoke(getDefineClassMethod(),
                         ClassLoader.getSystemClassLoader(), name, data, 0, data.length, null, null);
@@ -188,7 +156,7 @@ final class ReflectionImpl implements Reflection {
      * @return If loaded - true, otherwise - false
      */
     @Override
-    public @Cached boolean isClassPresents(String className, ClassLoader loader) {
+    public boolean isClassPresents(String className, ClassLoader loader) {
         this.checkCaller(); // check call
         List<?> fetched = ReflectionImpl.cachedLoaders.get(loader);
         if (fetched == null) fetched = ReflectionImpl.getClasses(loader);
@@ -204,7 +172,7 @@ final class ReflectionImpl implements Reflection {
      * @return List of loaded classes
      */
     private static List<?> getClasses(ClassLoader loader) {
-        List<?> result = (List<?>) getUnsafe().getObject(loader, Offset.of(ClassLoader.class, "classes") );
+        List<?> result = (List<?>) UnsafeFactory.createUnsafe().getObject(loader, Offset.of(ClassLoader.class, "classes") );
         ReflectionImpl.cachedLoaders.put(loader, result);
         return result;
     }
@@ -219,7 +187,7 @@ final class ReflectionImpl implements Reflection {
     @Override
     public void redefineClassLoader(Class<?> clazz, ClassLoader loader) {
         this.checkCaller(); // check call
-        getUnsafe().putObject(clazz, Offset.of(Class.class, "classLoader"), loader);
+        UnsafeFactory.createUnsafe().putObject(clazz, Offset.of(Class.class, "classLoader"), loader);
     }
 
     /**
@@ -237,18 +205,18 @@ final class ReflectionImpl implements Reflection {
             throws InvocationTargetException, IllegalAccessException {
         this.checkCaller(); // check call
         this.unlockNative(method); // will remove all modifiers
-        Object tmp = getUnsafe().getObject(method, Offset.of(Method.class, "clazz") );
+        Object tmp = UnsafeFactory.createUnsafe().getObject(method, Offset.of(Method.class, "clazz") );
         // Вот здесь, честное слово, магия ебейшая, я сам не знаю почему это работает, но оставлю это так
         // P.S. Причём я понял, что это не должно работать, только спустя некоторое время после релиза этого метода
         // P.S. Если будет проверка по совместимости с модулем - мы пролетим как фанера над Парижем
-        getUnsafe().putObject(method, Offset.of(Method.class, "clazz"), method.getDeclaringClass() );
+        UnsafeFactory.createUnsafe().putObject(method, Offset.of(Method.class, "clazz"), method.getDeclaringClass() );
         return method.invoke(o, args);
     }
 
-    private static @Cached Class<?> getInternalReflectionClass()
+    private static Class<?> getInternalReflectionClass()
             throws ClassNotFoundException {
         if (ReflectionImpl.internalReflectionClass == null) {
-            switch (ReflectionImpl.getRuntimeVersion() ) {
+            switch (RuntimeUtil.getRuntimeVersion() ) {
                 case 8:
                     ReflectionImpl.internalReflectionClass = Class.forName("sun.reflect.Reflection");
                     break;
@@ -262,10 +230,10 @@ final class ReflectionImpl implements Reflection {
         return ReflectionImpl.internalReflectionClass;
     }
 
-    private static @Cached Method getHideFieldsMethod()
+    private static Method getHideFieldsMethod()
             throws ClassNotFoundException, NoSuchMethodException {
         if (ReflectionImpl.hideFieldsMethod == null) {
-            switch (ReflectionImpl.getRuntimeVersion() ) {
+            switch (RuntimeUtil.getRuntimeVersion() ) {
                 case 8:
                     ReflectionImpl.hideFieldsMethod = getInternalReflectionClass()
                             .getDeclaredMethod("registerFieldsToFilter", Class.class, String[].class);
@@ -281,10 +249,10 @@ final class ReflectionImpl implements Reflection {
         return ReflectionImpl.hideFieldsMethod;
     }
 
-    private static @Cached Method getHideMethodsMethod()
+    private static Method getHideMethodsMethod()
             throws ClassNotFoundException, NoSuchMethodException {
         if (ReflectionImpl.hideMethodsMethod == null) {
-            switch (ReflectionImpl.getRuntimeVersion() ) {
+            switch (RuntimeUtil.getRuntimeVersion() ) {
                 case 8:
                     ReflectionImpl.hideMethodsMethod = getInternalReflectionClass()
                             .getDeclaredMethod("registerMethodsToFilter", Class.class, String[].class);
@@ -300,9 +268,9 @@ final class ReflectionImpl implements Reflection {
         return ReflectionImpl.hideMethodsMethod;
     }
 
-    private static @Cached Object getWildcardObject() {
+    private static Object getWildcardObject() {
         if (ReflectionImpl.wildcardObject == null) {
-            switch (ReflectionImpl.getRuntimeVersion() ) {
+            switch (RuntimeUtil.getRuntimeVersion() ) {
                 case 8:
                     ReflectionImpl.wildcardObject = new String[] {
                             // fields from Reflection.java
@@ -349,16 +317,16 @@ final class ReflectionImpl implements Reflection {
      */
     private static void hideFromReflection(Class<?> clazz)
             throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        if (getRuntimeVersion() >= 16) {
+        if (RuntimeUtil.getRuntimeVersion() >= 16) {
             // Здесь происходит дичайшая магия сего интернет-пространства
             // Потому-что если мы попытается вызвать у класса, полученного через
             // getInternalReflectionClass(), метод getModule(), то версия Java SE 8
             // пошлёт нас далеко за горы и скажет, что такого метода нет.
             Class<?> internalClass = getInternalReflectionClass();
             // Поэтому достаём модуль по вычисленному оффсету из памяти JVM
-            Object module = getUnsafe().getObject(internalClass, Offset.of(Class.class, "module") );
+            Object module = UnsafeFactory.createUnsafe().getObject(internalClass, Offset.of(Class.class, "module") );
             // Устанавливаем сами себе полученный модуль, тем самым делая подмену
-            getUnsafe().putObject(ReflectionImpl.class, Offset.of(Class.class, "module"), module);
+            UnsafeFactory.createUnsafe().putObject(ReflectionImpl.class, Offset.of(Class.class, "module"), module);
         }
         // В общем, есть такое волшебное поле - override в классе
         // AccessibleObject и оно влияет на то, будет ли вызываться проверка

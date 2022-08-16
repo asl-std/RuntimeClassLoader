@@ -1,6 +1,6 @@
 package ru.aslcraft.tests;
 
-import ru.aslcraft.runtimeclassloader.network.JarClassLoader;
+import ru.aslcraft.runtimeclassloader.loader.JarClassLoader;
 import ru.aslcraft.runtimeclassloader.network.MavenLibrary;
 import ru.aslcraft.runtimeclassloader.network.MavenURL;
 
@@ -21,8 +21,8 @@ public class Main {
 //
 //		new CustomClassLoader(lib).resolveDependencies();
 
-		final JarClassLoader loader = new JarClassLoader(MavenURL.fromDependency(MavenLibrary.ASM));
-		loader.loadClasses();
+		final JarClassLoader loader = new JarClassLoader(MavenURL.fromDependency(MavenLibrary.GSON).download() );
+		System.out.println(loader.loadClasses() );
 
 //
 //		System.out.println(lib.getDependencies().size() );
