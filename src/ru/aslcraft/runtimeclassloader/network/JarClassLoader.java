@@ -7,33 +7,31 @@ import ru.aslcraft.runtimeclassloader.util.NetUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
  *
  */
-public final class MavenClassLoader {
+public final class JarClassLoader {
 
 	// Used only for debug
 	private static final boolean isDebugging = true;
 
-	// Notifies that the list of loaded classes will be sorted
-	private final boolean magicSorting;
-
+	private final Map<String, byte[]> allEntries = new ConcurrentHashMap<>();
 	private final List<Class<?>> loadedClasses = new ArrayList<>();
 
-	private Map<String, byte[]> allEntries = new ConcurrentHashMap<>();
+	private final JarFile jar;
 
-	private byte[] origin;
-	private int lastProblemsAmount = -1;
-
-	public MavenClassLoader(MavenLibrary lib) throws IOException {
+	// For removal
+	@Deprecated
+	public JarClassLoader(MavenLibrary lib) throws IOException {
 		this(MavenURL.fromDependency(lib));
 
 		ImmutableList<Dependency> dependencies = lib.getDependencies();
@@ -45,7 +43,7 @@ public final class MavenClassLoader {
 				if (isDebugging)
 					System.out.println("Loading dependency " + dependency.groupId() + "." + dependency.artifactId());
 
-				new MavenClassLoader(MavenURL.fromDependency(dependency)).loadClasses();
+				new JarClassLoader(MavenURL.fromDependency(dependency)).loadClasses();
 			} catch (IOException e) {
 				if (isDebugging)
 					System.out.println("Could't load dependency "
@@ -55,59 +53,45 @@ public final class MavenClassLoader {
 		});
 	}
 
-	public MavenClassLoader(MavenURL url) throws IOException {
-		this(url, true);
+	// For removal
+	@Deprecated
+	public JarClassLoader(MavenURL url) throws IOException {
+		this(url.download() );
 	}
 
-	public MavenClassLoader(MavenURL url, boolean magicSort) throws IOException {
-		this(url.download(), magicSort);
+	/**
+	 *
+	 * Constructor is deprecated due to unsafe initializing of .jar file.
+	 *
+	 * @param data Jar file contents
+	 * @throws IOException If some of IO operations went wrong
+	 */
+	@Deprecated
+	public JarClassLoader(byte[] data) throws IOException {
+		this(FileUtil.toJarFile(data) );
 	}
 
-	private MavenClassLoader(byte[] data) {
-		this(data, true);
-	}
-
-	private MavenClassLoader(byte[] data, boolean magicSort) {
-		origin = data;
-		magicSorting = magicSort;
+	public JarClassLoader(JarFile jar) {
+		this.jar = jar;
 	}
 
 	public List<Class<?>> loadClasses() throws IOException {
 		this.preLoadClasses();
 		this.loadClasses0();
-
-		// Удаляем прочие данные, потому что
-		// повторная загрузка классов из одного
-		// и того же экземпляра объекта - невозможна.
-		allEntries = null;
-		origin = null;
-
 		return loadedClasses;
 	}
 
+
+	// === Class Loading From Jar Entry === //
+
+
 	private void preLoadClasses() throws IOException {
-		JarFile file = FileUtil.toJarFile(this.origin);
-
-		FileUtil.performOnEntries(file, this::loadEntry);
-
+		FileUtil.performOnEntries(this.jar, this::loadEntry);
 		// Не забываем закрыть считывание файла
-		file.close();
-
-		if (magicSorting) {
-			// Сортируем список по ключу (название класса) в зависимости с алфавитом.
-			// На практике позволяет подгружать сразу намного больше классов, чем ежели без этого.
-			allEntries = allEntries.entrySet().stream().sorted(Map.Entry.comparingByKey() )
-					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (k, v) -> k, LinkedHashMap::new) );
-		}
+		this.jar.close();
 	}
 
 	private void loadEntry(ZipFile file, ZipEntry entry) {
-		try {
-			this.loadEntry0((JarFile) file, (JarEntry) entry);
-		} catch (IOException ignored) { }
-	}
-
-	private void loadEntry0(JarFile file, JarEntry entry) throws IOException {
 		// Если это директория - скипаем
 		if (entry.isDirectory() ) return;
 
@@ -123,16 +107,26 @@ public final class MavenClassLoader {
 		final String className = name.replace(".class", "")
 				.replace("/", ".");
 
-		// Считываем данные
-		InputStream inStream = file.getInputStream(entry);
+		try {
+			// Считываем данные
+			InputStream inStream = file.getInputStream(entry);
 
-		allEntries.put(className, NetUtil.toByteArray(inStream) );
+			// Запоминаем данные - класс : байты класса
+			this.allEntries.put(className, NetUtil.toByteArray(inStream) );
 
-		// Не забываем закрывать поток
-		inStream.close();
+			// Не забываем закрывать поток
+			inStream.close();
+		} catch (IOException e) {
+			throw new RuntimeException(String.format("Failed to get bytes from entry with name %s", name), e);
+		}
 	}
 
+
+	// === Class Loading Into Runtime === //
+
+
 	int loaded = 0;
+	int lastProblemsAmount = -1;
 
 	private void loadClasses0() {
 		// Счётчик незагруженных классов
@@ -141,7 +135,7 @@ public final class MavenClassLoader {
 		// Более быстрый способ загрузки классов
 		Iterator<Map.Entry<String, byte[]>> it = this.allEntries.entrySet().iterator();
 
-		if (MavenClassLoader.isDebugging && loaded == 0) {
+		if (JarClassLoader.isDebugging && loaded == 0) {
 			System.out.printf("Preparing to load %s classes!\n", this.allEntries.size() );
 		}
 
@@ -153,34 +147,34 @@ public final class MavenClassLoader {
 				it.remove();
 				continue;
 			}
-			if (!loadClass0(entry.getKey(), entry.getValue() ) ) ++problems;
+			if (!loadClass(entry.getKey(), entry.getValue() ) ) ++problems;
 		}
 
-		if (MavenClassLoader.isDebugging) {
+		if (JarClassLoader.isDebugging) {
 			loaded += allEntries.size() - problems;
 			System.out.printf("Loaded: %s / Not loaded: %s\n", loaded, allEntries.size() );
 		}
 
-		// Если есть незагруженные классы и количество прошлых незагруженных
-		// классов (из-за рекурсии) не равняется текущему количеству (в ином случае рекурсия будет бесконечной).
+		// Рекурсивно подгружаем оставшиеся классы, если они не загрузились по какой-то из причин
 		if (problems != 0 && lastProblemsAmount != problems) {
 			lastProblemsAmount = problems;
 			loadClasses0();
 		}
 	}
 
-	private boolean loadClass0(String name, byte[] data) {
+	private boolean loadClass(String name, byte[] data) {
+		Class<?> clazz = null;
+
 		try {
-			Class<?> clazz = ReflectionFactory.createReflection().defineClass(name, data);
 			// add to currently loaded class list
-			loadedClasses.add(clazz);
+			loadedClasses.add(clazz = ReflectionFactory.createReflection().defineClass(name, data) );
 		} catch (Exception e) {
-			if (MavenClassLoader.isDebugging) {
-				//System.out.printf("Failed to load class: %s\n", name);
-				//e.printStackTrace();
+			if (JarClassLoader.isDebugging) {
+				System.out.printf("Failed to load class: %s\n", name);
+				e.printStackTrace();
 			}
-			return false;
 		}
-		return true;
+
+		return clazz != null;
 	}
 }

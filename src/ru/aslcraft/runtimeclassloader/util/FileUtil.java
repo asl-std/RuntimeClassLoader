@@ -3,15 +3,15 @@ package ru.aslcraft.runtimeclassloader.util;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.Enumeration;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-public class FileUtil {
+public final class FileUtil {
+
+    private FileUtil() { }
 
     public static void performOnEntries(JarFile file, BiConsumer<ZipFile, ZipEntry> biConsumer) {
         FileUtil.performOnEntries((ZipFile) file, biConsumer);
