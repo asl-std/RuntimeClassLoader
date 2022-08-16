@@ -4,6 +4,7 @@ import ru.aslcraft.runtimeclassloader.network.Dependency;
 import ru.aslcraft.runtimeclassloader.network.MavenPom;
 import ru.aslcraft.runtimeclassloader.util.XMLReader;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashSet;
@@ -20,8 +21,7 @@ public class MavenLibClassLoader {
     }
 
     public void resolveDependencies() throws IOException {
-        for (Dependency tmp : this.getDependencies(dependency) )
-            System.out.println(this.getDependencies(tmp) );
+        System.out.println(this.getDependencies(this.dependency) );
     }
 
     private List<Dependency> getDependencies(Dependency dependency) throws IOException {

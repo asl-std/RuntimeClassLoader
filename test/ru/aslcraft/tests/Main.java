@@ -1,6 +1,7 @@
 package ru.aslcraft.tests;
 
 import ru.aslcraft.runtimeclassloader.loader.JarClassLoader;
+import ru.aslcraft.runtimeclassloader.loader.MavenLibClassLoader;
 import ru.aslcraft.runtimeclassloader.network.MavenLibrary;
 import ru.aslcraft.runtimeclassloader.network.MavenURL;
 
@@ -17,12 +18,12 @@ public class Main {
 
 
 
-//		final MavenLibrary lib = MavenLibrary.MYSQL_CONNECTOR;
+		final MavenLibrary lib = MavenLibrary.MYSQL_CONNECTOR;
 //
-//		new CustomClassLoader(lib).resolveDependencies();
+		new MavenLibClassLoader(lib).resolveDependencies();
 
-		final JarClassLoader loader = new JarClassLoader(MavenURL.fromDependency(MavenLibrary.GSON).download() );
-		System.out.println(loader.loadClasses() );
+//		final JarClassLoader loader = new JarClassLoader(MavenURL.fromDependency(MavenLibrary.GSON).download() );
+//		System.out.println(loader.loadClasses() );
 
 //
 //		System.out.println(lib.getDependencies().size() );

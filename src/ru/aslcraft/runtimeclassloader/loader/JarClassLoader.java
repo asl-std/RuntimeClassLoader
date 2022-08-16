@@ -6,27 +6,22 @@ import ru.aslcraft.runtimeclassloader.util.NetUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-/**
- *
- */
 public final class JarClassLoader {
 
 	// Used only for debug
 	private static final boolean isDebugging = true;
 
-	private final Map<String, byte[]> allEntries = new ConcurrentHashMap<>();
+	private final Map<String, byte[]> allEntries = Collections.synchronizedMap(new LinkedHashMap<>() );
 	private final List<Class<?>> loadedClasses = new ArrayList<>();
 
 	private final JarFile jar;
+
+	private int lastProblemsAmount = -1;
 
 	/**
 	 *
@@ -102,9 +97,6 @@ public final class JarClassLoader {
 	// === Class Loading Into Runtime === //
 
 
-	int loaded = 0;
-	int lastProblemsAmount = -1;
-
 	private void loadClasses0() {
 		// Счётчик незагруженных классов
 		int problems = 0;
@@ -112,7 +104,7 @@ public final class JarClassLoader {
 		// Более быстрый способ загрузки классов
 		Iterator<Map.Entry<String, byte[]>> it = this.allEntries.entrySet().iterator();
 
-		if (JarClassLoader.isDebugging && loaded == 0) {
+		if (JarClassLoader.isDebugging && this.loadedClasses.size() == 0) {
 			System.out.printf("Preparing to load %s classes!\n", this.allEntries.size() );
 		}
 
@@ -128,8 +120,7 @@ public final class JarClassLoader {
 		}
 
 		if (JarClassLoader.isDebugging) {
-			loaded += allEntries.size() - problems;
-			System.out.printf("Currently classes loaded: %s\n", loaded);
+			System.out.printf("Currently classes loaded: %s\n", this.loadedClasses.size() );
 		}
 
 		// Рекурсивно подгружаем оставшиеся классы, если они не загрузились по какой-то из причин
@@ -141,7 +132,6 @@ public final class JarClassLoader {
 
 	private boolean loadClass(String name, byte[] data) {
 		Class<?> clazz = null;
-
 		try {
 			// add to currently loaded class list
 			loadedClasses.add(clazz = ReflectionFactory.createReflection().defineClass(name, data) );
@@ -151,7 +141,6 @@ public final class JarClassLoader {
 //				e.printStackTrace();
 			}
 		}
-
 		return clazz != null;
 	}
 }
