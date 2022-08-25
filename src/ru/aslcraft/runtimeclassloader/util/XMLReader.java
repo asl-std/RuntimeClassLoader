@@ -149,7 +149,7 @@ public class XMLReader {
 			}
 			if (version.startsWith("${")){
 				try {
-					version = pomReader.getTagData("properties").getTagData(version.replace("${", "").replace("}/","")).getValue();
+					version = pomReader.getTagData("properties").getTagData(version.replace("${", "").replace("}/","")).getValue()+"/";
 				} catch (PomException e) {
 					try {
 						StringBuilder metadata = new StringBuilder();
@@ -160,7 +160,7 @@ public class XMLReader {
 							String gId = pomReader.getTagData("parent").getTagData("groupId").getValue().replace(".", "/")+"/";
 							String aId= pomReader.getTagData("parent").getTagData("artifactId").getValue().replace(".", "/")+"/";
 							String ver = pomReader.getTagData("parent").getTagData("version").getValue();
-							URL u = new URL(s+gId+aId+ver+"/"+aId.replace("/", "")+"-"+ver+".pom");
+							URL u = new URL(s+gId+aId+ver+"/"+aId.replace("/", "")+"-"+ver.replace("/", "")+".pom");
 							HttpURLConnection connection = (HttpURLConnection)u.openConnection();
 							connection.setRequestMethod("GET");
 							connection.connect();
@@ -179,7 +179,7 @@ public class XMLReader {
 							}
 						}
 						PomReader metadataPOM = new PomReader(metadata.toString());
-						version = metadataPOM.getTagData("properties").getTagData(version.replace("${", "").replace("}/","")).getValue();
+						version = metadataPOM.getTagData("properties").getTagData(version.replace("${", "").replace("}/","")).getValue()+"/";
 					} catch (PomException | IOException ex) {
 						e.printStackTrace();
 					}
@@ -188,7 +188,7 @@ public class XMLReader {
 			String result = artifactId.replace("/", "")+"-"+version.replace("/", "");
 
 			for (String mvn : mvnURLs) {
-				urlsStr.add(mvn + groupId + artifactId + version+"/" + result);
+				urlsStr.add(mvn + groupId + artifactId + version + result);
 			}
 			x++;
 		}
